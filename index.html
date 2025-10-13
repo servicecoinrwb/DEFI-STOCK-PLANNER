@@ -213,14 +213,17 @@
 </head>
 <body>
 
-    <h1 style="text-align:center; margin-bottom:24px;">DeFi to Dividends Planner</h1>
+    <div class="row" style="justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap: wrap;">
+        <h1 style="margin-bottom:0;">DeFi to Dividends Planner</h1>
+        <a href="https://debank.com/profile/0x4386a86277a03ff37188416767ad74e4381b226c" target="_blank" class="btn ghost">View DeBank Profile ↗</a>
+    </div>
 
     <!-- Combined DeFi + Stock Yield Summary -->
     <section class="card" id="summaryCard">
       <h2 class="title">Combined Income Summary</h2>
       <div class="row" style="gap:12px; flex-wrap:wrap">
         <div class="badge">On‑chain daily (USD): <b id="sumDaily" style="margin-left:6px">$0.00</b></div>
-        <div class="badge">On‑chain per year: <b id="sumDefiYear" style="margin-left:6px">$0</b></div>
+        <div class="badge">Kept on‑chain / year: <b id="sumDefiYear" style="margin-left:6px">$0</b></div>
         <div class="badge">Net to stocks / year: <b id="sumToStocksYear" style="margin-left:6px">$0</b></div>
         <div class="badge">Est. dividends in year 1: <b id="sumDivYear" style="margin-left:6px">$0</b></div>
         <div class="badge">Combined yearly cashflow: <b id="sumCombinedYear" style="margin-left:6px">$0</b></div>
@@ -1007,8 +1010,8 @@
                         plugins: {
                             legend: { display: false },
                             tooltip: {
-                                titleColor: 'var(--text-primary)',
-                                bodyColor: 'var(--text-primary)',
+                                titleColor: '#ffffff',
+                                bodyColor: '#e0e0e0',
                                 callbacks: {
                                     label: (context) => `${context.dataset.label}: ${formatCurrency(context.raw)}`
                                 }
@@ -1018,13 +1021,13 @@
                             y: { 
                                 beginAtZero: true, 
                                 ticks: { 
-                                    color: 'var(--text-primary)',
+                                    color: '#e0e0e0',
                                     callback: (value) => formatCurrency(value)
                                 },
-                                grid: { color: 'var(--border-color)' }
+                                grid: { color: 'rgba(224, 224, 224, 0.2)' }
                             },
                             x: { 
-                                ticks: { color: 'var(--text-primary)' },
+                                ticks: { color: '#e0e0e0' },
                                 grid: { color: 'transparent' }
                             }
                         }
