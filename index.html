@@ -318,15 +318,19 @@
           <label class="small muted">xGRAIL allocated</label>
           <input class="input" id="xgAmount" type="number" step="0.001" value="130.005"/>
         </div>
-        <div style="width:140px">
-            <label class="small muted">GRAIL price (USD)</label>
-            <input class="input" id="xgPrice" type="number" step="0.01" placeholder="e.g., 42.00"/>
-        </div>
-        <div style="flex-grow: 1; min-width: 200px;">
-            <label class="small muted">CoinGecko ID (<a href="https://www.coingecko.com/" target="_blank" style="color:var(--text-secondary)">Find ID</a>)</label>
-            <div class="row" style="gap:4px">
-                <input class="input" id="grailCoingeckoId" value="camelot-token"/>
-                <button class="btn" id="btnFetchGrailPrice" style="padding: 10px 12px;">⚡</button>
+        <div style="flex-grow: 1; min-width: 380px;">
+            <div class="row" style="align-items:flex-end; gap:8px; flex-wrap: nowrap;">
+                <div style="flex-grow: 1;">
+                    <label class="small muted">CoinGecko ID (<a href="https://www.coingecko.com/" target="_blank" style="color:var(--text-secondary)">Find ID</a>)</label>
+                    <div class="row" style="gap:4px; flex-wrap: nowrap;">
+                        <input class="input" id="grailCoingeckoId" value="camelot-token"/>
+                        <button class="btn" id="btnFetchGrailPrice" style="padding: 10px 12px;">⚡</button>
+                    </div>
+                </div>
+                <div style="width:140px">
+                    <label class="small muted">GRAIL price (USD)</label>
+                    <input class="input" id="xgPrice" type="number" step="0.01" placeholder="e.g., 42.00"/>
+                </div>
             </div>
         </div>
         <div style="width:150px">
