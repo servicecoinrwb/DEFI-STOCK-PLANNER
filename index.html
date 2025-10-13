@@ -801,15 +801,20 @@
                 });
                 updateTotalPct();
 
-                // Update Summary Card
-                let totalInvested = 0;
+                // --- NEW: Calculate current market value of stocks ---
+                let stockMarketValue = 0;
                 dom.tbody.querySelectorAll('tr').forEach(row => {
-                    totalInvested += parseFloat(row.querySelector('.cum-invested').value) || 0;
+                    const shares = parseFloat(row.querySelector('.cum-shares').value) || 0;
+                    const price = parseFloat(row.querySelector('.price').value) || 0;
+                    stockMarketValue += shares * price;
                 });
-                const brokerageBalance = getNum(dom.broBalance) + totalInvested;
+
+                // Update Summary Card
+                const uninvestedCash = getNum(dom.broBalance);
+                const brokerageMarketValue = uninvestedCash + stockMarketValue;
 
                 const onChainYearly = dailyDeFi * 365.25 * (1 - pctStocks);
-                const divYear1 = (brokerageBalance + yearlyInvest) * avgDivYield;
+                const divYear1 = (brokerageMarketValue + yearlyInvest) * avgDivYield;
 
                 dom.sumDaily.textContent = formatCurrency(dailyDeFi);
                 dom.sumDefiYear.textContent = formatCurrency(onChainYearly);
@@ -819,7 +824,7 @@
 
                 // Blended Yield
                 const includeBrokerage = dom.broInclude.checked;
-                const principal = (includeBrokerage ? brokerageBalance : 0) + (xgUsdValue || 0);
+                const principal = (includeBrokerage ? brokerageMarketValue : 0) + (xgUsdValue || 0);
                 if (principal > 0) {
                     const blendedYield = (onChainYearly + divYear1) / principal * 100;
                     dom.sumBlendedYield.textContent = `${formatNumber(blendedYield, 2)}%`;
@@ -828,10 +833,10 @@
                 }
 
                 // Update ETF Wizard
-                const shares = getNum(dom.etfShares);
+                const etfShares = getNum(dom.etfShares);
                 const startNav = getNum(dom.etfStartNav);
-                const aum = xgUsdValue + yearlyInvest;
-                const liveNav = shares > 0 ? aum / shares : 0;
+                const aum = xgUsdValue + brokerageMarketValue; // Corrected AUM
+                const liveNav = etfShares > 0 ? aum / etfShares : 0;
                 const change = startNav > 0 ? (liveNav - startNav) / startNav * 100 : 0;
                 
                 dom.etfAUM.textContent = formatCurrency(aum);
@@ -840,7 +845,7 @@
                 dom.etfChange.className = 'mono ' + (change >= 0 ? 'up' : 'down');
 
                 // Update charts
-                updateProjectionCharts(brokerageBalance, yearlyInvest, growth, avgDivYield, years, drip);
+                updateProjectionCharts(brokerageMarketValue, yearlyInvest, growth, avgDivYield, years, drip);
                 
                 // Save state after calculation
                 saveState();
