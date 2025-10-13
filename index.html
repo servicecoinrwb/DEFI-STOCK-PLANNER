@@ -87,7 +87,7 @@
             border-color: var(--accent-primary);
             box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
         }
-        .btn {
+        .btn, a.btn {
             background-color: var(--accent-primary);
             color: white;
             border: none;
@@ -96,15 +96,18 @@
             font-weight: 500;
             cursor: pointer;
             transition: background-color 0.2s, transform 0.1s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
         }
-        .btn:hover { background-color: var(--accent-primary-hover); }
-        .btn:active { transform: scale(0.98); }
-        .btn.ghost {
+        .btn:hover, a.btn:hover { background-color: var(--accent-primary-hover); }
+        .btn:active, a.btn:active { transform: scale(0.98); }
+        .btn.ghost, a.btn.ghost {
             background-color: transparent;
             color: var(--accent-primary);
             border: 1px solid var(--accent-primary);
         }
-        .btn.ghost:hover { background-color: rgba(0, 123, 255, 0.1); }
+        .btn.ghost:hover, a.btn.ghost:hover { background-color: rgba(0, 123, 255, 0.1); }
         .btn:disabled {
             background-color: var(--bg-tertiary);
             color: var(--text-muted);
@@ -303,7 +306,10 @@
 
     <!-- xGRAIL Real Yield panel -->
     <section class="card" style="margin-top:16px">
-      <h2 class="title">xGRAIL Real Yield → Daily Rewards</h2>
+      <div class="row" style="justify-content:space-between;align-items:flex-start;">
+        <h2 class="title">xGRAIL Real Yield → Daily Rewards</h2>
+        <a href="https://app.camelot.exchange/xgrail/staking" target="_blank" class="btn ghost">Go to Staking ↗</a>
+      </div>
       <div class="note">Use this to auto‑calculate your <b>Daily DeFi rewards (USD)</b> from xGRAIL. Toggle on, then adjust the fields. Add a GRAIL price to auto‑fill Stake USD.</div>
       <div class="hr"></div>
       <div class="row" style="gap:10px; align-items:flex-end; flex-wrap:wrap">
@@ -313,8 +319,15 @@
           <input class="input" id="xgAmount" type="number" step="0.001" value="130.005"/>
         </div>
         <div style="width:140px">
-          <label class="small muted">GRAIL price (USD)</label>
-          <input class="input" id="xgPrice" type="number" step="0.01" placeholder="e.g., 42.00"/>
+            <label class="small muted">GRAIL price (USD)</label>
+            <input class="input" id="xgPrice" type="number" step="0.01" placeholder="e.g., 42.00"/>
+        </div>
+        <div style="flex-grow: 1; min-width: 200px;">
+            <label class="small muted">CoinGecko ID (<a href="https://www.coingecko.com/" target="_blank" style="color:var(--text-secondary)">Find ID</a>)</label>
+            <div class="row" style="gap:4px">
+                <input class="input" id="grailCoingeckoId" value="camelot-token"/>
+                <button class="btn" id="btnFetchGrailPrice" style="padding: 10px 12px;">⚡</button>
+            </div>
         </div>
         <div style="width:150px">
           <label class="small muted">Method</label>
@@ -428,6 +441,7 @@
         <div class="row">
           <button class="btn" id="btnCalc">⚙️ Recalculate</button>
           <button class="btn" id="btnCSV">⬇️ Export Allocation CSV</button>
+          <a href="https://robinhood.com/account/investing" target="_blank" class="btn ghost">Go to Broker ↗</a>
         </div>
       </div>
     </section>
@@ -463,9 +477,16 @@
           <div class="small muted">Quick Split — enter a single amount to break down by your % allocation</div>
           <input class="input" id="lump" type="number" min="0" step="0.01" value="200" style="width:160px" />
           <button class="btn" id="btnLumpCSV">⬇️ Export Lump Split</button>
-          <button class="btn" id="btnFetchPrices">⚡ Fetch Live Prices</button>
           <button class="btn" id="btnAdd">＋ Add Row</button>
         </div>
+      </div>
+      <div class="hr" style="margin-top:12px; margin-bottom:12px;"></div>
+      <div class="row" style="justify-content:flex-end;align-items:flex-end;gap:12px;flex-wrap:wrap">
+        <div class="note" style="margin-right:auto;">For live prices, get a free <a href="https://www.alphavantage.co/support/#api-key" target="_blank" style="color: var(--text-secondary); text-decoration: underline;">AlphaVantage API Key</a>. The default 'demo' key is unreliable.</div>
+        <div style="width: 220px;">
+            <input class="input" id="apiKey" type="password" placeholder="Enter API Key" value="KSWYMZVUOXTZH0BT">
+        </div>
+        <button class="btn" id="btnFetchPrices">⚡ Fetch Live Prices</button>
       </div>
 
       <div class="table-container">
@@ -519,11 +540,11 @@
                 'sumDaily', 'sumDefiYear', 'sumToStocksYear', 'sumDivYear', 'sumCombinedYear', 'sumBlendedYield', 'broBalance', 'broInclude',
                 'etfTicker', 'etfName', 'etfStartNav', 'etfShares', 'etfNav', 'etfAUM', 'etfChange', 'btnEtfHelp', 'etfHelp',
                 'xgUse', 'xgAmount', 'xgPrice', 'xgMethod', 'xgAPY', 'xgUsdValue', 'xgPerEpoch', 'xgEpochDays', 'xgFee', 'xgDaily',
-                'xgAPYWrap', 'xgUSDWrap', 'xgEpochWrap',
+                'xgAPYWrap', 'xgUSDWrap', 'xgEpochWrap', 'grailCoingeckoId', 'btnFetchGrailPrice',
                 'daily', 'cadence', 'fees', 'pctStocks', 'pctDefi', 'years', 'growth', 'yield', 'drip', 'weeklyCash',
                 'perHarvest', 'perWeek', 'perMonth', 'btnCalc', 'btnCSV',
                 'depAmount', 'depQuick', 'depDate', 'btnLogDeposit', 'btnClearDeposits',
-                'totalPct', 'lump', 'btnLumpCSV', 'btnAdd', 'tbody', 'btnFetchPrices'
+                'totalPct', 'lump', 'btnLumpCSV', 'btnAdd', 'tbody', 'btnFetchPrices', 'apiKey'
             ];
             const dom = {};
             ids.forEach(id => dom[id] = document.getElementById(id));
@@ -743,43 +764,80 @@
                 document.body.removeChild(link);
             }
 
-            // --- STOCK PRICE API ---
+            // --- PRICE APIS ---
+            async function fetchGrailPrice() {
+                const coingeckoId = dom.grailCoingeckoId.value.trim().toLowerCase();
+                if (!coingeckoId) return;
+                
+                dom.btnFetchGrailPrice.disabled = true;
+                dom.btnFetchGrailPrice.innerHTML = '...';
+
+                try {
+                    const url = `https://api.coingecko.com/api/v3/simple/price?ids=${coingeckoId}&vs_currencies=usd`;
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const data = await response.json();
+
+                    if (data[coingeckoId] && data[coingeckoId].usd) {
+                        dom.xgPrice.value = data[coingeckoId].usd.toFixed(2);
+                        calculate();
+                    } else {
+                         console.warn(`No price data for ID "${coingeckoId}"`, data);
+                    }
+                } catch (error) {
+                    console.error('Error fetching CoinGecko price:', error);
+                } finally {
+                    dom.btnFetchGrailPrice.disabled = false;
+                    dom.btnFetchGrailPrice.innerHTML = '⚡';
+                }
+            }
+
             async function fetchStockPrices() {
                 dom.btnFetchPrices.disabled = true;
                 dom.btnFetchPrices.textContent = 'Fetching...';
 
+                const apiKey = dom.apiKey.value.trim() || 'demo';
                 const rows = Array.from(dom.tbody.querySelectorAll('tr'));
-                const promises = rows.map(row => {
-                    const ticker = row.querySelector('.ticker').value.trim();
-                    if (!ticker) return Promise.resolve({ row, price: null });
-                    
-                    // Using a free, no-key API. Note: This has rate limits.
-                    const API_KEY = 'demo'; // AlphaVantage demo key
-                    const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${API_KEY}`;
-                    
-                    return fetch(url)
-                        .then(response => response.json())
-                        .then(data => {
-                            const price = data?.['Global Quote']?.['05. price'];
-                            return { row, price: price ? parseFloat(price) : null };
-                        })
-                        .catch(error => {
-                            console.error(`Could not fetch price for ${ticker}:`, error);
-                            return { row, price: null };
-                        });
-                });
+                
+                const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-                const results = await Promise.all(promises);
+                for (const row of rows) {
+                    const ticker = row.querySelector('.ticker').value.trim().toUpperCase();
+                    if (!ticker) continue;
 
-                results.forEach(result => {
-                    if (result.price !== null) {
-                        result.row.querySelector('.price').value = result.price.toFixed(2);
+                    row.style.transition = 'background-color 0.3s';
+
+                    try {
+                        const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${apiKey}`;
+                        const response = await fetch(url);
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        const data = await response.json();
+
+                        const price = data?.['Global Quote']?.['05. price'];
+
+                        if (price) {
+                            row.querySelector('.price').value = parseFloat(price).toFixed(2);
+                            row.style.backgroundColor = 'rgba(40, 167, 69, 0.3)';
+                        } else {
+                            console.warn(`No price data for ${ticker}. API response:`, data);
+                            row.style.backgroundColor = 'rgba(220, 53, 69, 0.3)';
+                        }
+                    } catch (error) {
+                        console.error(`Could not fetch price for ${ticker}:`, error);
+                        row.style.backgroundColor = 'rgba(220, 53, 69, 0.3)';
                     }
-                });
+
+                    setTimeout(() => {
+                        row.style.backgroundColor = '';
+                    }, 1200);
+
+                    // AlphaVantage free tier is 25 calls/day, and up to 5/min.
+                    await sleep(1000); 
+                }
 
                 dom.btnFetchPrices.disabled = false;
                 dom.btnFetchPrices.textContent = '⚡ Fetch Live Prices';
-                calculate(); // Recalculate everything with new prices
+                calculate();
             }
 
 
@@ -1022,6 +1080,7 @@
                 dom.btnClearDeposits.addEventListener('click', clearDeposits);
                 dom.depQuick.addEventListener('change', handleQuickDeposit);
                 dom.btnFetchPrices.addEventListener('click', fetchStockPrices);
+                dom.btnFetchGrailPrice.addEventListener('click', fetchGrailPrice);
 
                 // ETF Help Accordion
                 dom.btnEtfHelp.addEventListener('click', () => {
