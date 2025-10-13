@@ -144,11 +144,13 @@
         .warning { color: #ffc107; }
 
         /* Table Styles */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
-            overflow-x: auto;
-            display: block;
         }
         th, td {
             padding: 12px 10px;
@@ -192,6 +194,12 @@
             padding: 2px 6px;
             font-family: 'JetBrains Mono', monospace;
             font-size: 12px;
+        }
+        
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 220px;
         }
     </style>
 </head>
@@ -447,36 +455,42 @@
         </div>
       </div>
 
-      <table id="allocTable" style="margin-top:10px">
-        <thead>
-          <tr>
-            <th>Ticker</th>
-            <th>Name</th>
-            <th class="right">% Alloc</th>
-            <th class="right">Est. Yield %</th>
-            <th class="right nowrap">Price $</th>
-            <th class="right nowrap">Lump $</th>
-            <th class="right nowrap">Weekly $</th>
-            <th class="right nowrap">Monthly $</th>
-            <th class="right nowrap">Cum Invest $</th>
-            <th class="right nowrap">Cum Shares</th>
-            <th class="right nowrap">Avg Cost $</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
+      <div class="table-container">
+        <table id="allocTable" style="margin-top:10px">
+            <thead>
+              <tr>
+                <th>Ticker</th>
+                <th>Name</th>
+                <th class="right">% Alloc</th>
+                <th class="right">Est. Yield %</th>
+                <th class="right nowrap">Price $</th>
+                <th class="right nowrap">Lump $</th>
+                <th class="right nowrap">Weekly $</th>
+                <th class="right nowrap">Monthly $</th>
+                <th class="right nowrap">Cum Invest $</th>
+                <th class="right nowrap">Cum Shares</th>
+                <th class="right nowrap">Avg Cost $</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+        </table>
+      </div>
       <div class="note">Yields are for planning only. Set DRIP in your broker.</div>
     </section>
 
     <section class="grid grid-2" style="margin-top:16px">
       <div class="card">
         <h2 class="title">4) Projection (Value Over Time)</h2>
-        <canvas id="valueChart" height="220"></canvas>
+        <div class="chart-container">
+            <canvas id="valueChart"></canvas>
+        </div>
       </div>
       <div class="card">
         <h2 class="title">5) Projection (Dividends Per Year)</h2>
-        <canvas id="divChart" height="220"></canvas>
+        <div class="chart-container">
+            <canvas id="divChart"></canvas>
+        </div>
       </div>
     </section>
 
@@ -517,6 +531,15 @@
             const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
             const formatNumber = (val, digits = 2) => new Intl.NumberFormat('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(val);
             const getNum = (el) => parseFloat(el.value) || 0;
+            const debounce = (func, delay) => {
+                let timeoutId;
+                return (...args) => {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => {
+                        func.apply(this, args);
+                    }, delay);
+                };
+            };
 
             // --- LOCAL STORAGE ---
             function saveState() {
@@ -605,12 +628,13 @@
                 `;
                 dom.tbody.appendChild(tr);
 
+                const debouncedCalculate = debounce(calculate, 300);
                 tr.querySelector('.btn-delete').addEventListener('click', () => {
                     tr.remove();
                     calculate();
                 });
                 tr.querySelectorAll('input').forEach(input => {
-                    input.addEventListener('input', calculate);
+                    input.addEventListener('input', debouncedCalculate);
                 });
                 updateRowCumulative(tr);
             }
@@ -722,7 +746,11 @@
                     if(xgMethod === 'apy') {
                         xgDaily = (xgUsdValue * (xgAPY / 100)) / 365;
                     } else { // epoch
-                        xgDaily = (xgAmount * xgPerEpoch) / xgEpochDays;
+                        if (xgEpochDays > 0) {
+                            xgDaily = (xgAmount * xgPerEpoch) / xgEpochDays;
+                        } else {
+                            xgDaily = 0;
+                        }
                     }
                     xgDaily *= (1 - xgFee / 100);
                     dom.xgDaily.textContent = formatCurrency(xgDaily);
@@ -872,18 +900,30 @@
                     }
                 });
 
-                if (valueChart) valueChart.destroy();
-                valueChart = new Chart(document.getElementById('valueChart'), chartConfig('Portfolio Value', valueData, 'rgba(0, 123, 255, 1)'));
+                if (!valueChart) {
+                    valueChart = new Chart(document.getElementById('valueChart'), chartConfig('Portfolio Value', valueData, 'rgba(0, 123, 255, 1)'));
+                } else {
+                    valueChart.data.labels = labels;
+                    valueChart.data.datasets[0].data = valueData;
+                    valueChart.update();
+                }
 
-                if (divChart) divChart.destroy();
-                divChart = new Chart(document.getElementById('divChart'), chartConfig('Annual Dividends', divData, 'rgba(40, 167, 69, 1)'));
+                if (!divChart) {
+                    divChart = new Chart(document.getElementById('divChart'), chartConfig('Annual Dividends', divData, 'rgba(40, 167, 69, 1)'));
+                } else {
+                    divChart.data.labels = labels;
+                    divChart.data.datasets[0].data = divData;
+                    divChart.update();
+                }
             }
 
             // --- EVENT LISTENERS ---
             function setupEventListeners() {
-                // Calculation Triggers
+                const debouncedCalculate = debounce(calculate, 300);
+                
+                // Calculation Triggers on input fields
                 const inputs = document.querySelectorAll('.input, select');
-                inputs.forEach(input => input.addEventListener('input', calculate));
+                inputs.forEach(input => input.addEventListener('input', debouncedCalculate));
                 
                 // xGRAIL UI Toggle
                 dom.xgMethod.addEventListener('change', () => {
@@ -895,10 +935,16 @@
                 dom.xgMethod.dispatchEvent(new Event('change'));
 
                 // Auto-sync percentages
-                dom.pctStocks.addEventListener('input', () => dom.pctDefi.value = 100 - getNum(dom.pctStocks));
-                dom.pctDefi.addEventListener('input', () => dom.pctStocks.value = 100 - getNum(dom.pctDefi));
+                dom.pctStocks.addEventListener('input', () => {
+                    dom.pctDefi.value = 100 - getNum(dom.pctStocks);
+                    debouncedCalculate();
+                });
+                dom.pctDefi.addEventListener('input', () => {
+                    dom.pctStocks.value = 100 - getNum(dom.pctDefi);
+                    debouncedCalculate();
+                });
                 
-                // Button Clicks
+                // Button Clicks (immediate calculation)
                 dom.btnCalc.addEventListener('click', calculate);
                 dom.btnAdd.addEventListener('click', () => addRow());
                 dom.btnCSV.addEventListener('click', () => exportCSV(false));
@@ -926,3 +972,4 @@
     </script>
 </body>
 </html>
+
