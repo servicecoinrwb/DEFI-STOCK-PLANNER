@@ -289,6 +289,7 @@
             </div>
             <button class="btn" id="btnSimBuy">Buy Shares (Redeem)</button>
             <button class="btn" id="btnSimSell">Sell Shares (Create)</button>
+            <button class="btn ghost" id="btnSetNavTo10" style="margin-left: auto;">Set NAV to $10</button>
         </div>
       <div id="etfHelp" class="accordion">
         <div class="hr"></div>
@@ -556,7 +557,7 @@
             const ids = [
                 'sumDaily', 'sumDefiYear', 'sumToStocksYear', 'sumDivYear', 'sumCombinedYear', 'sumBlendedYield', 'broBalance', 'broInclude',
                 'etfTicker', 'etfName', 'etfStartNav', 'etfShares', 'etfNav', 'etfAUM', 'etfChange', 'btnEtfHelp', 'etfHelp',
-                'simShares', 'btnSimBuy', 'btnSimSell',
+                'simShares', 'btnSimBuy', 'btnSimSell', 'btnSetNavTo10',
                 'xgUse', 'xgAmount', 'xgPrice', 'xgMethod', 'xgAPY', 'xgUsdValue', 'xgPerEpoch', 'xgEpochDays', 'xgFee', 'xgDaily',
                 'xgAPYWrap', 'xgUSDWrap', 'xgEpochWrap', 'grailCoingeckoId', 'btnFetchGrailPrice',
                 'daily', 'cadence', 'fees', 'pctStocks', 'pctDefi', 'years', 'growth', 'yield', 'drip', 'weeklyCash',
@@ -1113,6 +1114,15 @@
                     const simShares = getNum(dom.simShares);
                     dom.etfShares.value = currentShares + simShares;
                     calculate();
+                });
+                
+                dom.btnSetNavTo10.addEventListener('click', () => {
+                    const aumText = dom.etfAUM.textContent;
+                    const aum = parseFloat(aumText.replace(/[^0-9.-]+/g,""));
+                    if (aum > 0) {
+                        dom.etfShares.value = Math.round(aum / 10);
+                        calculate();
+                    }
                 });
 
 
