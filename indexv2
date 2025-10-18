@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeFi to Dividends Planner</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --text-muted: #707070;
+            --accent-primary: #007bff;
+            --accent-primary-hover: #0056b3;
+            --accent-positive: #28a745;
+            --accent-negative: #dc3545;
+            --border-color: #3a3a3a;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px rgba(0,0,0,0.15);
+        }
+
+        /* General Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 24px;
+            font-size: 14px;
+        }
+        * { box-sizing: border-box; }
+        h1, h2, h3, h4 { 
+            margin: 0 0 8px 0;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        h1 { font-size: 28px; }
+        h2 { font-size: 20px; }
+        h3 { font-size: 18px; }
+        h4 { font-size: 16px; color: var(--text-secondary); margin-top: 16px;}
+
+        /* Layouts */
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+        .grid {
+            display: grid;
+            gap: 16px;
+        }
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+        .row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .hr {
+            border: 0;
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 16px 0;
+        }
+
+        /* Components */
+        .input, select {
+            width: 100%;
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+        .btn, a.btn {
+            background-color: var(--accent-primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn:hover, a.btn:hover { background-color: var(--accent-primary-hover); }
+        .btn:active, a.btn:active { transform: scale(0.98); }
+        .btn.ghost, a.btn.ghost {
+            background-color: transparent;
+            color: var(--accent-primary);
+            border: 1px solid var(--accent-primary);
+        }
+        .btn.ghost:hover, a.btn.ghost:hover { background-color: rgba(0, 123, 255, 0.1); }
+        .btn:disabled {
+            background-color: var(--bg-tertiary);
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+        
+        .badge {
+            background-color: var(--bg-tertiary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+        }
+        .note { color: var(--text-secondary); font-size: 13px; max-width: 80ch; }
+        .small { font-size: 12px; }
+        .muted { color: var(--text-muted); }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--bg-tertiary);
+            padding: 8px 12px;
+            border-radius: 99px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .pill input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+        }
+        
+        .up { color: var(--accent-positive); }
+        .down { color: var(--accent-negative); }
+        .warning { color: #ffc107; }
+
+        /* Table Styles */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+        th {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        tbody tr:last-child td { border-bottom: none; }
+        .right { text-align: right; }
+        td input {
+            padding: 6px 8px;
+            font-size: 13px;
+            min-width: 80px;
+        }
+        .btn-delete {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px;
+        }
+        .btn-delete:hover { color: var(--accent-negative); }
+
+        /* Accordion */
+        .accordion {
+            display: none;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+        .accordion ul { margin: 0; padding-left: 20px;}
+        .kbd {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+        }
+        
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 220px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="row" style="justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap: wrap;">
+        <h1 style="margin-bottom:0;">DeFi to Dividends Planner</h1>
+        <a href="https://debank.com/profile/0x4386a86277a03ff37188416767ad74e4381b226c" target="_blank" class="btn ghost">View DeBank Profile ↗</a>
+    </div>
+
+    <!-- Combined DeFi + Stock Yield Summary -->
+    <section class="card" id="summaryCard">
+      <h2 class="title">Combined Income Summary</h2>
+      <div class="row" style="gap:12px; flex-wrap:wrap">
+        <div class="badge">On‑chain daily (USD): <b id="sumDaily" style="margin-left:6px">$0.00</b></div>
+        <div class="badge">Kept on‑chain / year: <b id="sumDefiYear" style="margin-left:6px">$0</b></div>
+        <div class="badge">Net to stocks / year: <b id="sumToStocksYear" style="margin-left:6px">$0</b></div>
+        <div class="badge">Est. dividends in year 1: <b id="sumDivYear" style="margin-left:6px">$0</b></div>
+        <div class="badge">Combined yearly cashflow: <b id="sumCombinedYear" style="margin-left:6px">$0</b></div>
+        <div class="badge">Blended income rate: <b id="sumBlendedYield" style="margin-left:6px">–</b></div>
+      </div>
+      <div class="row" style="gap:10px; margin-top:10px; align-items:flex-end; flex-wrap:wrap">
+        <div style="width:220px">
+          <label class="small muted">Brokerage balance (USD)</label>
+          <input class="input" id="broBalance" type="number" step="0.01" value="0"/>
+        </div>
+        <label class="pill"><input type="checkbox" id="broInclude" checked/> Include brokerage in blended rate</label>
+      </div>
+      <div class="note" style="margin-top:6px">Dividends assume average yield and current contribution rate. If DRIP is on, dividends are reinvested (shown here for comparison).</div>
+    </section>
+
+    <!-- ETF Wizard -->
+    <section class="card" id="etfCard" style="margin-top:16px">
+      <div class="row" style="justify-content:space-between;align-items:flex-end">
+        <div>
+          <h2 class="title">ETF Wizard 🪄 (for fun)</h2>
+          <div class="note">Give your plan a pretend ETF ticker & name. We compute a live NAV from your <b>Stake USD + annual stock contributions</b>. Purely illustrative.</div>
+        </div>
+        <div class="row" style="gap:8px;align-items:center">
+          <button class="btn ghost" id="btnEtfHelp">❓ Tutorial</button>
+          <div class="badge">Change: <b id="etfChange" class="mono">0.00%</b></div>
+        </div>
+      </div>
+      <div class="hr"></div>
+      <div class="grid grid-3">
+        <div>
+          <label class="small muted">ETF Ticker</label>
+          <input class="input" id="etfTicker" value="UDGE" maxlength="5" />
+        </div>
+        <div>
+          <label class="small muted">ETF Name</label>
+          <input class="input" id="etfName" value="Utility Dividend Growth ETF" />
+        </div>
+        <div>
+          <label class="small muted">Start NAV (USD)</label>
+          <input class="input" id="etfStartNav" type="number" step="0.01" value="10" />
+        </div>
+      </div>
+      <div class="grid grid-3" style="margin-top:10px">
+        <div>
+          <label class="small muted">Shares Outstanding</label>
+          <input class="input" id="etfShares" type="number" step="1" value="1000000" />
+        </div>
+        <div>
+          <label class="small muted">Live NAV (USD)</label>
+          <div class="badge mono" id="etfNav">$0.00</div>
+        </div>
+        <div>
+          <label class="small muted">AUM (USD)</label>
+          <div class="badge mono" id="etfAUM">$0</div>
+        </div>
+      </div>
+       <div class="hr"></div>
+        <h3 class="title" style="font-size: 16px;">Fund Manager Simulator</h3>
+        <div class="row" style="align-items:flex-end">
+            <div style="width: 200px;">
+                <label class="small muted">Number of Shares</label>
+                <input class="input" id="simShares" type="number" value="10000" step="1">
+            </div>
+            <button class="btn" id="btnSimBuy">Buy Shares (Redeem)</button>
+            <button class="btn" id="btnSimSell">Sell Shares (Create)</button>
+            <button class="btn ghost" id="btnSetNavTo10" style="margin-left: auto;">Set NAV to $10</button>
+        </div>
+      <div id="etfHelp" class="accordion">
+        <div class="hr"></div>
+        <h3 class="title" style="font-size:18px">ETF Wizard — Quick Tutorial</h3>
+        <p class="note">Simulate your own ETF built from your plan. This is just for fun, not a real security.</p>
+        <ol style="margin:0 0 10px 18px; padding:0; color: var(--text-secondary); line-height: 1.6;">
+          <li><b>Name it:</b> Pick a fun <span class="kbd">Ticker</span> and <span class="kbd">Name</span>.</li>
+          <li><b>Choose a baseline:</b> Set <span class="kbd">Start NAV</span> (e.g., $10.00) and <span class="kbd">Shares Outstanding</span>.</li>
+          <li><b>We compute NAV:</b> <i>Live NAV</i> = (<b>Stake USD</b> + <b>Annual stock contributions</b>) ÷ <b>Shares</b>.</li>
+          <li><b>% Change:</b> vs your Start NAV; turns <span class="up">green</span> when rising and <span class="down">red</span> when falling.</li>
+        </ol>
+        <div class="grid grid-3">
+          <div>
+            <div class="small muted">Tip</div>
+            <div class="badge">Include brokerage in blended rate at the top to change your context yield.</div>
+          </div>
+          <div>
+            <div class="small muted">Try this</div>
+            <div class="badge">Toggle xGRAIL APY vs. Epoch in the real‑yield panel and watch NAV shift.</div>
+          </div>
+          <div>
+            <div class="small muted">Glossary</div>
+            <div class="badge">NAV = Net Asset Value, AUM = Assets Under Management.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- xGRAIL Real Yield panel -->
+    <section class="card" style="margin-top:16px">
+      <div class="row" style="justify-content:space-between;align-items:flex-start;">
+        <h2 class="title">xGRAIL Real Yield → Daily Rewards</h2>
+        <a href="https://app.camelot.exchange/xgrail/staking" target="_blank" class="btn ghost">Go to Staking ↗</a>
+      </div>
+      <div class="note">Use this to auto‑calculate your <b>Daily DeFi rewards (USD)</b> from xGRAIL. Toggle on, then adjust the fields. Add a GRAIL price to auto‑fill Stake USD.</div>
+      <div class="hr"></div>
+      <div class="row" style="gap:10px; align-items:flex-end; flex-wrap:wrap">
+        <label class="pill"><input type="checkbox" id="xgUse"/> Use xGRAIL to set Daily</label>
+        <div style="width:140px">
+          <label class="small muted">xGRAIL allocated</label>
+          <input class="input" id="xgAmount" type="number" step="0.001" value="130.005"/>
+        </div>
+        <div style="flex-grow: 1; min-width: 380px;">
+            <div class="row" style="align-items:flex-end; gap:8px; flex-wrap: nowrap;">
+                <div style="flex-grow: 1;">
+                    <label class="small muted">CoinGecko ID (<a href="https://www.coingecko.com/" target="_blank" style="color:var(--text-secondary)">Find ID</a>)</label>
+                    <div class="row" style="gap:4px; flex-wrap: nowrap;">
+                        <input class="input" id="grailCoingeckoId" value="camelot-token"/>
+                        <button class="btn" id="btnFetchGrailPrice" style="padding: 10px 12px;">⚡</button>
+                    </div>
+                </div>
+                <div style="width:140px">
+                    <label class="small muted">GRAIL price (USD)</label>
+                    <input class="input" id="xgPrice" type="number" step="0.01" placeholder="e.g., 42.00"/>
+                </div>
+            </div>
+        </div>
+        <div style="width:150px">
+          <label class="small muted">Method</label>
+          <select id="xgMethod" class="input">
+            <option value="apy" selected>APY %</option>
+            <option value="epoch">$ / xGRAIL / epoch</option>
+          </select>
+        </div>
+        <div id="xgAPYWrap" style="width:140px">
+          <label class="small muted">APY (%)</label>
+          <input class="input" id="xgAPY" type="number" step="0.01" value="38.61"/>
+        </div>
+        <div id="xgUSDWrap" style="width:180px">
+          <label class="small muted">Stake value (USD)</label>
+          <input class="input" id="xgUsdValue" type="number" step="0.01" placeholder="e.g., 5000"/>
+        </div>
+        <div id="xgEpochWrap" style="display:none;gap:10px" class="row">
+          <div style="width:180px">
+            <label class="small muted">$ / xGRAIL / epoch</label>
+            <input class="input" id="xgPerEpoch" type="number" step="0.01" value="1.53"/>
+          </div>
+          <div style="width:130px">
+            <label class="small muted">Epoch days</label>
+            <input class="input" id="xgEpochDays" type="number" step="1" value="7"/>
+          </div>
+        </div>
+        <div style="width:120px">
+          <label class="small muted">Dealloc fee %</label>
+          <input class="input" id="xgFee" type="number" step="0.01" value="0.5"/>
+        </div>
+        <div class="badge">Computed daily from xGRAIL: <b id="xgDaily" style="margin-left:6px">$0.00</b></div>
+      </div>
+      <div class="note" style="margin-top:8px">When enabled, this replaces the manual Daily DeFi rewards field below. You can still edit afterwards.</div>
+    </section>
+
+    <section class="grid grid-2" style="margin-top:16px">
+      <div class="card">
+        <h2 class="title">1) Inputs — Yield & Contributions</h2>
+        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));">
+            <div>
+                <label class="small muted">Daily DeFi rewards (USD)</label>
+                <input class="input" type="number" id="daily" value="30" min="0" step="0.01" />
+            </div>
+            <div>
+                <label class="small muted">Weekly Cash Contribution ($)</label>
+                <input class="input" type="number" id="weeklyCash" value="500" min="0" step="1" />
+            </div>
+             <div>
+                <label class="small muted">USDC Buffer ($)</label>
+                <input class="input" type="number" id="usdcBuffer" value="2000" min="0" step="1" />
+            </div>
+            <div>
+                <label class="small muted">Harvest cadence (DeFi)</label>
+                <select id="cadence" class="input">
+                    <option value="daily">Daily</option>
+                    <option value="weekly" selected>Weekly</option>
+                    <option value="biweekly">Bi‑Weekly</option>
+                    <option value="monthly">Monthly</option>
+                </select>
+            </div>
+        </div>
+        <div class="grid grid-3" style="margin-top:10px">
+          <div>
+            <label class="small muted">Fees per harvest (swap+bridge+wd)</label>
+            <input class="input" type="number" id="fees" value="6" min="0" step="0.01" />
+          </div>
+          <div>
+            <label class="small muted">% routed to stocks</label>
+            <input class="input" type="number" id="pctStocks" value="100" min="0" max="100" step="1" />
+          </div>
+          <div>
+            <label class="small muted">% kept on‑chain</label>
+            <input class="input" type="number" id="pctDefi" value="0" min="0" max="100" step="1" />
+          </div>
+        </div>
+        <div class="grid grid-3" style="margin-top:10px">
+          <div>
+            <label class="small muted">Projection years</label>
+            <input class="input" type="number" id="years" value="10" min="1" max="40" step="1" />
+          </div>
+          <div>
+            <label class="small muted">Assumed annual stock growth (%)</label>
+            <input class="input" type="number" id="growth" value="6" step="0.1" />
+          </div>
+          <div>
+            <label class="small muted">Assumed avg dividend yield (%)</label>
+            <input class="input" type="number" id="yield" value="4" step="0.1" />
+          </div>
+        </div>
+        <div class="grid grid-3" style="margin-top:10px">
+            <div>
+                <label class="small muted">Reinvest dividends (DRIP)</label>
+                <select id="drip" class="input"><option value="yes" selected>Yes</option><option value="no">No</option></select>
+            </div>
+        </div>
+        <div class="hr"></div>
+        <div class="row">
+          <div class="badge">DeFi to invest per harvest: <b id="perHarvest" style="margin-left:6px"></b></div>
+          <div class="badge">Approx weekly invest: <b id="perWeek" style="margin-left:6px"></b></div>
+          <div class="badge">Approx monthly invest: <b id="perMonth" style="margin-left:6px"></b></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="title">2) How It Works</h2>
+        <ol style="margin:0 0 8px 18px; padding:0; color: var(--text-secondary); line-height: 1.6;">
+          <li>Claim GRAIL rewards → swap to USDC on Arbitrum.</li>
+          <li>Bridge and withdraw to your bank (batched weekly to reduce fees).</li>
+          <li>Fund your broker with DeFi rewards + weekly cash contributions.</li>
+          <li>Use broker recurring buys with the allocations below.</li>
+          <li>Enable DRIP so dividends auto‑reinvest.</li>
+          <li>Rebalance quarterly.</li>
+        </ol>
+        <div class="hr"></div>
+        <div class="row">
+          <button class="btn" id="btnCalc">⚙️ Recalculate</button>
+          <button class="btn" id="btnCSV">⬇️ Export Allocation CSV</button>
+          <a href="https://robinhood.com/account/investing" target="_blank" class="btn ghost">Go to Broker ↗</a>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Safety Mix Card -->
+    <section class="card" style="margin-top:16px">
+        <div class="row" style="justify-content:space-between; align-items:flex-start;">
+            <h2 class="title">🧩 Suggested Safety Mix (Expanded)</h2>
+            <button class="btn ghost" id="btnSafetyHelp">Show Details</button>
+        </div>
+        <div id="safetyHelp" class="accordion">
+            <div class="hr"></div>
+            <h4>1. Maintain a USDC Buffer (2–3k On-Chain)</h4>
+            <p><strong>Purpose:</strong> This is your “stability tank.” It smooths weekly payouts when yields dip or gas/bridge costs spike.</p>
+            <p><strong>How it works:</strong></p>
+            <ul>
+                <li>Hold it in your xGRAIL wallet, vault, or an Arbitrum savings contract (e.g., Aave USDC or Overnight.fi USD+).</li>
+                <li>Don’t count this as investable cash — it’s a liquidity cushion.</li>
+                <li>When your DeFi rewards for the week are below your target (say, &lt; $180 harvest), you draw from the buffer instead of skipping a week.</li>
+                <li>When yields are strong (&gt; $30/day), replenish the buffer automatically.</li>
+            </ul>
+            <p><strong>Target range:</strong> Keep $2,000 – $3,000 USDC, roughly equal to 2–3 weeks of planned harvests.</p>
+
+            <h4>2. Add a Short-Term Treasury ETF (5–10%)</h4>
+            <p><strong>Purpose:</strong> Acts as a TradFi “cash proxy” and yield stabilizer. When equities or DeFi are volatile, this holds steady and still pays interest (~5% annually).</p>
+            <table style="max-width: 600px;">
+                <thead><tr><th>ETF</th><th>Yield</th><th>Duration</th><th>Risk</th><th>Use</th></tr></thead>
+                <tbody>
+                    <tr><td>SGOV (iShares 0-3 Month Treasury ETF)</td><td>≈ 5.3 %</td><td>~0.1 yr</td><td>Extremely low</td><td>Best pure safety cash park</td></tr>
+                    <tr><td>BIL (SPDR 1-3 Month T-Bill ETF)</td><td>≈ 5.2 %</td><td>~0.2 yr</td><td>Very low</td><td>Slightly more liquid than SGOV</td></tr>
+                    <tr><td>SHV (Short Treasury)</td><td>≈ 4.9 %</td><td>~0.4 yr</td><td>Low</td><td>Blend of 1–12 mo T-Bills</td></tr>
+                </tbody>
+            </table>
+             <p><strong>Allocation example:</strong></p>
+            <ul>
+                <li>90 – 95 % to your dividend equities (DTE, AWK, ENB, NEE, SCHD, EXC)</li>
+                <li>5 – 10 % to SGOV or BIL</li>
+                <li>When DeFi yields shrink or gas fees rise, pause stock buys and redirect weekly deposits here until DeFi stabilizes. This keeps your blended yield close to 5 % even if DeFi dries up.</li>
+            </ul>
+
+            <h4>3. Bridge-Fee Threshold Automation</h4>
+             <p><strong>Purpose:</strong> Avoid wasting small harvests on Arbitrum → bank bridge fees.</p>
+             <p><strong>Guideline:</strong> Wait until your on-chain USDC balance ≥ $100 before bridging to your brokerage or CEX. You can still log the amount in your planner for tracking, even if it stays on-chain that week.</p>
+             <table style="max-width: 400px;">
+                <thead><tr><th>Harvest</th><th>After-Fee Net</th><th>Action</th></tr></thead>
+                <tbody>
+                    <tr><td>$80</td><td>$74</td><td>Hold in buffer</td></tr>
+                    <tr><td>$160</td><td>$154</td><td>Bridge & invest</td></tr>
+                    <tr><td>$300</td><td>$292</td><td>Bridge & invest; top up SGOV/BIL position</td></tr>
+                </tbody>
+            </table>
+            
+            <h4>4. Optional: Stable-Yield Parking</h4>
+            <p>If you want to earn on your USDC buffer itself: Use <span class="kbd">Overnight.fi USD+</span>, <span class="kbd">Angle sDAI</span>, or <span class="kbd">Aave USDC</span> on Arbitrum for 5–8 % APY. These are relatively safe, daily-rebalancing stable-yield protocols.</p>
+
+            <h4>5. Emergency-Mode Rule (Optional)</h4>
+            <p>If DeFi yield &lt; $10/day for 2+ weeks:</p>
+            <ul>
+                <li>Pause new stock buys.</li>
+                <li>Redirect all weekly contributions into SGOV or your USDC buffer.</li>
+                <li>When yield recovers above $15/day, resume normal flow.</li>
+            </ul>
+        </div>
+    </section>
+
+
+    <!-- Deposits Logger -->
+    <section class="card" style="margin-top:16px">
+      <h2 class="title">2.5) Log Contributions / Deposits</h2>
+      <div class="note" style="margin-bottom:8px">Record a contribution and we'll split it across your allocations, track per‑ticker invested dollars & shares, and update average cost. (All local to your browser.)</div>
+      <div class="row" style="align-items:flex-end;gap:12px;flex-wrap:wrap">
+        <div style="width:160px"><label class="small muted">Amount to log ($)</label><input class="input" type="number" id="depAmount" step="0.01" placeholder="e.g., 200"/></div>
+        <div style="width:180px"><label class="small muted">Use quick amount</label>
+          <select class="input" id="depQuick">
+            <option value="">—</option>
+            <option value="week">Weekly (computed)</option>
+            <option value="month">Monthly (computed)</option>
+            <option value="harvest">Per‑harvest (computed)</option>
+          </select>
+        </div>
+        <div style="width:180px"><label class="small muted">Date (optional)</label><input class="input" type="date" id="depDate"/></div>
+        <button class="btn" id="btnLogDeposit">➕ Log deposit</button>
+        <button class="btn ghost" id="btnClearDeposits">🧹 Clear all deposits</button>
+      </div>
+      <div class="note" style="margin-top:6px">Shares are calculated using each row's <b>Price</b> field below. If price is blank, we'll still track the dollars.</div>
+    </section>
+
+    <section class="card" style="margin-top:16px">
+      <h2 class="title">3) Portfolio Allocation</h2>
+      <div class="note">Edit tickers, names, % allocations, and an optional current price to estimate shares on deposits. Totals should equal 100%.</div>
+      <div class="hr"></div>
+      <div class="row" style="justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
+        <div class="badge">Total allocation: <b id="totalPct">100%</b></div>
+        <div class="row" style="gap:8px">
+          <div class="small muted">Quick Split — enter a single amount to break down by your % allocation</div>
+          <input class="input" id="lump" type="number" min="0" step="0.01" value="200" style="width:160px" />
+          <button class="btn" id="btnLumpCSV">⬇️ Export Lump Split</button>
+          <button class="btn" id="btnAdd">＋ Add Row</button>
+        </div>
+      </div>
+      <div class="hr" style="margin-top:12px; margin-bottom:12px;"></div>
+      <div class="row" style="justify-content:flex-end;align-items:flex-end;gap:12px;flex-wrap:wrap">
+        <div class="note" style="margin-right:auto;">For live prices, get a free <a href="https://www.alphavantage.co/support/#api-key" target="_blank" style="color: var(--text-secondary); text-decoration: underline;">AlphaVantage API Key</a>. The default 'demo' key is unreliable.</div>
+        <div style="width: 220px;">
+            <input class="input" id="apiKey" type="password" placeholder="Enter API Key" value="KSWYMZVUOXTZH0BT">
+        </div>
+        <button class="btn" id="btnFetchPrices">⚡ Fetch Live Prices</button>
+      </div>
+
+      <div class="table-container">
+        <table id="allocTable" style="margin-top:10px">
+            <thead>
+              <tr>
+                <th>Ticker</th>
+                <th>Name</th>
+                <th class="right">% Alloc</th>
+                <th class="right">Est. Yield %</th>
+                <th class="right nowrap">Price $</th>
+                <th class="right nowrap">Lump $</th>
+                <th class="right nowrap">Weekly $</th>
+                <th class="right nowrap">Monthly $</th>
+                <th class="right nowrap">Cum Invest $</th>
+                <th class="right nowrap">Cum Shares</th>
+                <th class="right nowrap">Avg Cost $</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="note">Yields are for planning only. Set DRIP in your broker.</div>
+    </section>
+
+    <section class="grid grid-2" style="margin-top:16px">
+      <div class="card">
+        <h2 class="title">4) Projection (Value Over Time)</h2>
+        <div class="chart-container">
+            <canvas id="valueChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h2 class="title">5) Projection (Dividends Per Year)</h2>
+        <div class="chart-container">
+            <canvas id="divChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <footer class="row" style="justify-content:space-between;margin:22px 0 40px; padding: 0 10px;">
+      <div class="muted small">Local storage only — your data stays in your browser.</div>
+      <div class="row"><span class="badge">Built for daily DeFi → dividend equity</span></div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM ELEMENT SELECTORS ---
+            const ids = [
+                'sumDaily', 'sumDefiYear', 'sumToStocksYear', 'sumDivYear', 'sumCombinedYear', 'sumBlendedYield', 'broBalance', 'broInclude',
+                'etfTicker', 'etfName', 'etfStartNav', 'etfShares', 'etfNav', 'etfAUM', 'etfChange', 'btnEtfHelp', 'etfHelp',
+                'simShares', 'btnSimBuy', 'btnSimSell', 'btnSetNavTo10',
+                'xgUse', 'xgAmount', 'xgPrice', 'xgMethod', 'xgAPY', 'xgUsdValue', 'xgPerEpoch', 'xgEpochDays', 'xgFee', 'xgDaily',
+                'xgAPYWrap', 'xgUSDWrap', 'xgEpochWrap', 'grailCoingeckoId', 'btnFetchGrailPrice',
+                'daily', 'cadence', 'fees', 'pctStocks', 'pctDefi', 'years', 'growth', 'yield', 'drip', 'weeklyCash', 'usdcBuffer',
+                'perHarvest', 'perWeek', 'perMonth', 'btnCalc', 'btnCSV',
+                'btnSafetyHelp', 'safetyHelp',
+                'depAmount', 'depQuick', 'depDate', 'btnLogDeposit', 'btnClearDeposits',
+                'totalPct', 'lump', 'btnLumpCSV', 'btnAdd', 'tbody', 'btnFetchPrices', 'apiKey'
+            ];
+            const dom = {};
+            ids.forEach(id => dom[id] = document.getElementById(id));
+
+            let valueChart, divChart;
+            const STORE_KEY = 'defiDividendPlannerState';
+
+            // --- DATA & STATE MANAGEMENT ---
+            const defaultAllocations = [
+                { ticker: 'DTE', name: 'DTE Energy Co.', pct: 16.0, yield: 3.4, price: 141.13, invested: 141.13, shares: 1.00 },
+                { ticker: 'SCHD', name: 'Schwab US Dividend ETF', pct: 16.0, yield: 3.5, price: 26.62, invested: 140.01, shares: 5.26 },
+                { ticker: 'AWK', name: 'American Water Works', pct: 16.0, yield: 2.2, price: 140.77, invested: 142.18, shares: 1.01 },
+                { ticker: 'ENB', name: 'Enbridge Inc.', pct: 16.0, yield: 7.6, price: 47.70, invested: 139.76, shares: 2.93 },
+                { ticker: 'NEE', name: 'NextEra Energy', pct: 16.0, yield: 3.0, price: 84.26, invested: 140.71, shares: 1.67 },
+                { ticker: 'EXC', name: 'Exelon Corp.', pct: 16.0, yield: 3.8, price: 46.64, invested: 139.44, shares: 2.99 },
+                { ticker: 'SGOV', name: 'iShares 0-3 Month Treasury ETF', pct: 4.0, yield: 5.3, price: 100.00, invested: 0, shares: 0 },
+            ];
+            
+            // --- HELPER FUNCTIONS ---
+            const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+            const formatNumber = (val, digits = 2) => new Intl.NumberFormat('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(val);
+            const getNum = (el) => parseFloat(el.value) || 0;
+            const debounce = (func, delay) => {
+                let timeoutId;
+                return (...args) => {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => {
+                        func.apply(this, args);
+                    }, delay);
+                };
+            };
+
+            // --- LOCAL STORAGE ---
+            function saveState() {
+                const allocations = [];
+                dom.tbody.querySelectorAll('tr').forEach(row => {
+                    allocations.push({
+                        ticker: row.querySelector('.ticker').value,
+                        name: row.querySelector('.name').value,
+                        pct: parseFloat(row.querySelector('.pct').value) || 0,
+                        yield: parseFloat(row.querySelector('.yield').value) || 0,
+                        price: parseFloat(row.querySelector('.price').value) || 0,
+                        invested: parseFloat(row.querySelector('.cum-invested').value) || 0,
+                        shares: parseFloat(row.querySelector('.cum-shares').value) || 0,
+                    });
+                });
+
+                const state = {
+                    inputs: {},
+                    allocations: allocations,
+                };
+
+                // Save all input fields
+                Object.keys(dom).forEach(key => {
+                    const el = dom[key];
+                    if (el && typeof el.value !== 'undefined') {
+                        if (el.type === 'checkbox') {
+                            state.inputs[key] = el.checked;
+                        } else {
+                            state.inputs[key] = el.value;
+                        }
+                    }
+                });
+                localStorage.setItem(STORE_KEY, JSON.stringify(state));
+            }
+
+            function loadState() {
+                const state = JSON.parse(localStorage.getItem(STORE_KEY));
+                if (!state) {
+                    renderAllocations(defaultAllocations);
+                    return;
+                }
+                
+                // Load input fields
+                if (state.inputs) {
+                    Object.keys(state.inputs).forEach(key => {
+                        if (dom[key]) {
+                            if (dom[key].type === 'checkbox') {
+                                dom[key].checked = state.inputs[key];
+                            } else {
+                                dom[key].value = state.inputs[key];
+                            }
+                        }
+                    });
+                }
+
+                renderAllocations(state.allocations || defaultAllocations);
+            }
+
+            // --- ALLOCATION TABLE LOGIC ---
+            function renderAllocations(allocations) {
+                dom.tbody.innerHTML = '';
+                allocations.forEach(alloc => addRow(alloc));
+                updateTotalPct();
+            }
+            
+            function addRow(data = {}) {
+                const tr = document.createElement('tr');
+                const { ticker = '', name = '', pct = 0, yield: rowYield = 0, price = 0, invested = 0, shares = 0 } = data;
+                
+                tr.innerHTML = `
+                    <td><input type="text" class="input ticker" value="${ticker.toUpperCase()}"></td>
+                    <td><input type="text" class="input name" value="${name}"></td>
+                    <td><input type="number" class="input right pct" value="${pct}" step="0.1" min="0" max="100"></td>
+                    <td><input type="number" class="input right yield" value="${rowYield}" step="0.1" min="0"></td>
+                    <td><input type="number" class="input right price" value="${price}" step="0.01" min="0"></td>
+                    <td class="right mono lump-split">$0.00</td>
+                    <td class="right mono weekly-split">$0.00</td>
+                    <td class="right mono monthly-split">$0.00</td>
+                    <td><input type="number" class="input right cum-invested" value="${invested.toFixed(2)}" step="0.01" min="0"></td>
+                    <td><input type="number" class="input right cum-shares" value="${shares.toFixed(4)}" step="0.0001" min="0"></td>
+                    <td class="right mono avg-cost">$0.00</td>
+                    <td><button class="btn-delete">×</button></td>
+                `;
+                dom.tbody.appendChild(tr);
+
+                const debouncedCalculate = debounce(calculate, 300);
+                tr.querySelector('.btn-delete').addEventListener('click', () => {
+                    tr.remove();
+                    calculate();
+                });
+                tr.querySelectorAll('input').forEach(input => {
+                    input.addEventListener('input', () => {
+                        if (input.classList.contains('cum-invested') || input.classList.contains('cum-shares')) {
+                           updateAvgCost(tr);
+                        }
+                        debouncedCalculate();
+                    });
+                });
+                updateAvgCost(tr);
+            }
+
+            function updateTotalPct() {
+                let total = 0;
+                dom.tbody.querySelectorAll('.pct').forEach(input => total += getNum(input));
+                dom.totalPct.textContent = `${formatNumber(total, 1)}%`;
+                dom.totalPct.classList.toggle('warning', total.toFixed(1) != 100.0);
+                dom.totalPct.classList.toggle('up', total.toFixed(1) == 100.0);
+            }
+
+            function updateAvgCost(row) {
+                const invested = parseFloat(row.querySelector('.cum-invested').value) || 0;
+                const shares = parseFloat(row.querySelector('.cum-shares').value) || 0;
+                row.querySelector('.avg-cost').textContent = formatCurrency(shares > 0 ? invested / shares : 0);
+            }
+
+            // --- DEPOSIT LOGIC ---
+            function logDeposit() {
+                const amount = getNum(dom.depAmount);
+                if (amount <= 0) return;
+
+                dom.tbody.querySelectorAll('tr').forEach(row => {
+                    const pct = (parseFloat(row.querySelector('.pct').value) || 0) / 100;
+                    const price = parseFloat(row.querySelector('.price').value) || 0;
+                    
+                    const depositForTicker = amount * pct;
+                    const sharesBought = price > 0 ? depositForTicker / price : 0;
+                    
+                    const investedInput = row.querySelector('.cum-invested');
+                    const sharesInput = row.querySelector('.cum-shares');
+
+                    const currentInvested = parseFloat(investedInput.value) || 0;
+                    const currentShares = parseFloat(sharesInput.value) || 0;
+
+                    investedInput.value = (currentInvested + depositForTicker).toFixed(2);
+                    sharesInput.value = (currentShares + sharesBought).toFixed(4);
+                    
+                    updateAvgCost(row);
+                });
+                
+                dom.depAmount.value = '';
+                calculate();
+            }
+            
+            function clearDeposits() {
+                if (window.confirm('Are you sure you want to clear all cumulative deposit data? This cannot be undone.')) {
+                     dom.tbody.querySelectorAll('tr').forEach(row => {
+                        row.querySelector('.cum-invested').value = '0.00';
+                        row.querySelector('.cum-shares').value = '0.0000';
+                        updateAvgCost(row);
+                    });
+                    calculate();
+                }
+            }
+            
+            function handleQuickDeposit() {
+                const val = dom.depQuick.value;
+                if (val === 'week') dom.depAmount.value = dom.perWeek.dataset.raw || 0;
+                else if (val === 'month') dom.depAmount.value = dom.perMonth.dataset.raw || 0;
+                else if (val === 'harvest') dom.depAmount.value = dom.perHarvest.dataset.raw || 0;
+            }
+
+            // --- CSV EXPORT ---
+            function exportCSV(isLump) {
+                let csv = 'Ticker,Name,% Allocation,' + (isLump ? 'Lump Amount ($)\n' : 'Weekly Amount ($),Monthly Amount ($)\n');
+                dom.tbody.querySelectorAll('tr').forEach(row => {
+                    const ticker = row.querySelector('.ticker').value;
+                    const name = row.querySelector('.name').value;
+                    const pct = row.querySelector('.pct').value;
+                    if (isLump) {
+                        const lump = row.querySelector('.lump-split').textContent;
+                        csv += `${ticker},"${name}",${pct},${lump.replace('$', '')}\n`;
+                    } else {
+                        const weekly = row.querySelector('.weekly-split').textContent;
+                        const monthly = row.querySelector('.monthly-split').textContent;
+                        csv += `${ticker},"${name}",${pct},${weekly.replace('$', '')},${monthly.replace('$', '')}\n`;
+                    }
+                });
+
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", `${isLump ? 'lump_sum_split' : 'allocation'}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
+            // --- PRICE APIS ---
+            async function fetchGrailPrice() {
+                const coingeckoId = dom.grailCoingeckoId.value.trim().toLowerCase();
+                if (!coingeckoId) return;
+                
+                dom.btnFetchGrailPrice.disabled = true;
+                dom.btnFetchGrailPrice.innerHTML = '...';
+
+                try {
+                    const url = `https://api.coingecko.com/api/v3/simple/price?ids=${coingeckoId}&vs_currencies=usd`;
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const data = await response.json();
+
+                    if (data[coingeckoId] && data[coingeckoId].usd) {
+                        dom.xgPrice.value = data[coingeckoId].usd.toFixed(2);
+                        calculate();
+                    } else {
+                         console.warn(`No price data for ID "${coingeckoId}"`, data);
+                    }
+                } catch (error) {
+                    console.error('Error fetching CoinGecko price:', error);
+                } finally {
+                    dom.btnFetchGrailPrice.disabled = false;
+                    dom.btnFetchGrailPrice.innerHTML = '⚡';
+                }
+            }
+
+            async function fetchStockPrices() {
+                dom.btnFetchPrices.disabled = true;
+                dom.btnFetchPrices.textContent = 'Fetching...';
+
+                const apiKey = dom.apiKey.value.trim() || 'demo';
+                const rows = Array.from(dom.tbody.querySelectorAll('tr'));
+                
+                const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+                for (const row of rows) {
+                    const ticker = row.querySelector('.ticker').value.trim().toUpperCase();
+                    if (!ticker) continue;
+
+                    row.style.transition = 'background-color 0.3s';
+
+                    try {
+                        const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${apiKey}`;
+                        const response = await fetch(url);
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        const data = await response.json();
+
+                        const price = data?.['Global Quote']?.['05. price'];
+
+                        if (price) {
+                            row.querySelector('.price').value = parseFloat(price).toFixed(2);
+                            row.style.backgroundColor = 'rgba(40, 167, 69, 0.3)';
+                        } else {
+                            console.warn(`No price data for ${ticker}. API response:`, data);
+                            row.style.backgroundColor = 'rgba(220, 53, 69, 0.3)';
+                        }
+                    } catch (error) {
+                        console.error(`Could not fetch price for ${ticker}:`, error);
+                        row.style.backgroundColor = 'rgba(220, 53, 69, 0.3)';
+                    }
+
+                    setTimeout(() => {
+                        row.style.backgroundColor = '';
+                    }, 1200);
+
+                    // AlphaVantage free tier is 25 calls/day, and up to 5/min.
+                    await sleep(1000); 
+                }
+
+                dom.btnFetchPrices.disabled = false;
+                dom.btnFetchPrices.textContent = '⚡ Fetch Live Prices';
+                calculate();
+            }
+
+
+            // --- CORE CALCULATION ENGINE ---
+            function calculate() {
+                // Read all inputs
+                const xgUse = dom.xgUse.checked;
+                const xgAmount = getNum(dom.xgAmount);
+                const xgPrice = getNum(dom.xgPrice);
+                const xgMethod = dom.xgMethod.value;
+                const xgAPY = getNum(dom.xgAPY);
+                const xgPerEpoch = getNum(dom.xgPerEpoch);
+                const xgEpochDays = getNum(dom.xgEpochDays);
+                const xgFee = getNum(dom.xgFee);
+                let xgUsdValue = getNum(dom.xgUsdValue);
+                if (xgPrice > 0) {
+                  xgUsdValue = xgAmount * xgPrice;
+                  dom.xgUsdValue.value = xgUsdValue.toFixed(2);
+                }
+
+                let dailyDeFi = getNum(dom.daily);
+                let xgDaily = 0;
+                if(xgUse) {
+                    if(xgMethod === 'apy') {
+                        xgDaily = (xgUsdValue * (xgAPY / 100)) / 365;
+                    } else { // epoch
+                        if (xgEpochDays > 0) {
+                            xgDaily = (xgAmount * xgPerEpoch) / xgEpochDays;
+                        } else {
+                            xgDaily = 0;
+                        }
+                    }
+                    xgDaily *= (1 - xgFee / 100);
+                    dom.xgDaily.textContent = formatCurrency(xgDaily);
+                    dom.daily.value = xgDaily.toFixed(2);
+                    dailyDeFi = xgDaily;
+                }
+
+                const weeklyCash = getNum(dom.weeklyCash);
+                const usdcBuffer = getNum(dom.usdcBuffer);
+                const cadence = dom.cadence.value;
+                const fees = getNum(dom.fees);
+                const pctStocks = getNum(dom.pctStocks) / 100;
+                const pctDefiNum = getNum(dom.pctDefi) / 100;
+                const years = getNum(dom.years);
+                const growth = getNum(dom.growth) / 100;
+                const avgDivYield = getNum(dom.yield) / 100;
+                const drip = dom.drip.value === 'yes';
+
+                // Calculate investment amounts
+                const daysPerHarvest = { daily: 1, weekly: 7, biweekly: 14, monthly: 30.44 }[cadence];
+                const grossPerHarvest = dailyDeFi * daysPerHarvest;
+                const netPerHarvest = Math.max(0, grossPerHarvest - fees);
+                const toStocksPerHarvest = netPerHarvest * pctStocks;
+                
+                const weeklyDeFiInvest = (toStocksPerHarvest / daysPerHarvest) * 7;
+                const weeklyInvest = weeklyDeFiInvest + weeklyCash;
+                const monthlyInvest = weeklyInvest * (30.44 / 7);
+                const yearlyInvest = weeklyInvest * (365.25 / 7);
+
+                dom.perHarvest.textContent = formatCurrency(toStocksPerHarvest);
+                dom.perHarvest.dataset.raw = toStocksPerHarvest.toFixed(2);
+                dom.perWeek.textContent = formatCurrency(weeklyInvest);
+                dom.perWeek.dataset.raw = weeklyInvest.toFixed(2);
+                dom.perMonth.textContent = formatCurrency(monthlyInvest);
+                dom.perMonth.dataset.raw = monthlyInvest.toFixed(2);
+
+                // Update Allocation Table Splits
+                const lump = getNum(dom.lump);
+                dom.tbody.querySelectorAll('tr').forEach(row => {
+                    const pct = (parseFloat(row.querySelector('.pct').value) || 0) / 100;
+                    row.querySelector('.lump-split').textContent = formatCurrency(lump * pct);
+                    row.querySelector('.weekly-split').textContent = formatCurrency(weeklyInvest * pct);
+                    row.querySelector('.monthly-split').textContent = formatCurrency(monthlyInvest * pct);
+                });
+                updateTotalPct();
+
+                // Calculate current market value of stocks
+                let stockMarketValue = 0;
+                dom.tbody.querySelectorAll('tr').forEach(row => {
+                    const shares = parseFloat(row.querySelector('.cum-shares').value) || 0;
+                    const price = parseFloat(row.querySelector('.price').value) || 0;
+                    stockMarketValue += shares * price;
+                });
+
+                // Update Summary Card
+                const uninvestedCash = getNum(dom.broBalance);
+                const brokerageMarketValue = uninvestedCash + stockMarketValue;
+
+                const onChainYearly = dailyDeFi * 365.25 * pctDefiNum;
+                const divYear1 = (brokerageMarketValue + yearlyInvest) * avgDivYield;
+
+                dom.sumDaily.textContent = formatCurrency(dailyDeFi);
+                dom.sumDefiYear.textContent = formatCurrency(onChainYearly);
+                dom.sumToStocksYear.textContent = formatCurrency(yearlyInvest);
+                dom.sumDivYear.textContent = formatCurrency(divYear1);
+                dom.sumCombinedYear.textContent = formatCurrency(onChainYearly + divYear1);
+
+                // Blended Yield
+                const includeBrokerage = dom.broInclude.checked;
+                const principal = (includeBrokerage ? brokerageMarketValue : 0) + (xgUsdValue || 0);
+                if (principal > 0) {
+                    const blendedYield = (onChainYearly + divYear1) / principal * 100;
+                    dom.sumBlendedYield.textContent = `${formatNumber(blendedYield, 2)}%`;
+                } else {
+                    dom.sumBlendedYield.textContent = '–';
+                }
+
+                // Update ETF Wizard
+                const etfShares = getNum(dom.etfShares);
+                const startNav = getNum(dom.etfStartNav);
+                const aum = xgUsdValue + brokerageMarketValue + usdcBuffer;
+                const liveNav = etfShares > 0 ? aum / etfShares : 0;
+                const change = startNav > 0 ? (liveNav - startNav) / startNav * 100 : 0;
+                
+                dom.etfAUM.textContent = formatCurrency(aum);
+                dom.etfNav.textContent = formatCurrency(liveNav);
+                dom.etfChange.textContent = `${formatNumber(change, 2)}%`;
+                dom.etfChange.className = 'mono ' + (change >= 0 ? 'up' : 'down');
+
+                // Update charts
+                updateProjectionCharts(brokerageMarketValue, yearlyInvest, growth, avgDivYield, years, drip);
+                
+                // Save state after calculation
+                saveState();
+            }
+
+            // --- CHARTING LOGIC ---
+            function updateProjectionCharts(startBalance, yearlyInvest, growth, divYield, years, drip) {
+                const labels = Array.from({ length: years + 1 }, (_, i) => `Year ${i}`);
+                const valueData = [];
+                const divData = [];
+                let currentBalance = startBalance;
+
+                for (let i = 0; i <= years; i++) {
+                    if (i > 0) {
+                        const dividends = currentBalance * divYield;
+                        const appreciation = currentBalance * growth;
+                        currentBalance += appreciation + yearlyInvest;
+                        if(drip) {
+                            currentBalance += dividends;
+                        }
+                    }
+                    valueData.push(currentBalance);
+                    divData.push(currentBalance * divYield);
+                }
+
+                const chartConfig = (label, data, color) => ({
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: label,
+                            data: data,
+                            borderColor: color,
+                            backgroundColor: `${color}33`,
+                            fill: true,
+                            tension: 0.2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                titleColor: '#ffffff',
+                                bodyColor: '#e0e0e0',
+                                callbacks: {
+                                    label: (context) => `${context.dataset.label}: ${formatCurrency(context.raw)}`
+                                }
+                            }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true, 
+                                ticks: { 
+                                    color: '#e0e0e0',
+                                    callback: (value) => formatCurrency(value)
+                                },
+                                grid: { color: 'rgba(224, 224, 224, 0.2)' }
+                            },
+                            x: { 
+                                ticks: { color: '#e0e0e0' },
+                                grid: { color: 'transparent' }
+                            }
+                        }
+                    }
+                });
+
+                if (!valueChart) {
+                    valueChart = new Chart(document.getElementById('valueChart'), chartConfig('Portfolio Value', valueData, 'rgba(0, 123, 255, 1)'));
+                } else {
+                    valueChart.data.labels = labels;
+                    valueChart.data.datasets[0].data = valueData;
+                    valueChart.update();
+                }
+
+                if (!divChart) {
+                    divChart = new Chart(document.getElementById('divChart'), chartConfig('Annual Dividends', divData, 'rgba(40, 167, 69, 1)'));
+                } else {
+                    divChart.data.labels = labels;
+                    divChart.data.datasets[0].data = divData;
+                    divChart.update();
+                }
+            }
+
+            // --- EVENT LISTENERS ---
+            function setupEventListeners() {
+                const debouncedCalculate = debounce(calculate, 300);
+                
+                // Calculation Triggers on input fields
+                const inputs = document.querySelectorAll('.input, select');
+                inputs.forEach(input => input.addEventListener('input', debouncedCalculate));
+                
+                // xGRAIL UI Toggle
+                dom.xgMethod.addEventListener('change', () => {
+                    const isApy = dom.xgMethod.value === 'apy';
+                    dom.xgAPYWrap.style.display = isApy ? 'block' : 'none';
+                    dom.xgUSDWrap.style.display = isApy ? 'block' : 'none';
+                    dom.xgEpochWrap.style.display = isApy ? 'none' : 'flex';
+                });
+                dom.xgMethod.dispatchEvent(new Event('change'));
+
+                // Auto-sync percentages
+                dom.pctStocks.addEventListener('input', () => {
+                    dom.pctDefi.value = 100 - getNum(dom.pctStocks);
+                    debouncedCalculate();
+                });
+                dom.pctDefi.addEventListener('input', () => {
+                    dom.pctStocks.value = 100 - getNum(dom.pctDefi);
+                    debouncedCalculate();
+                });
+                
+                // Button Clicks (immediate calculation)
+                dom.btnCalc.addEventListener('click', calculate);
+                dom.btnAdd.addEventListener('click', () => addRow());
+                dom.btnCSV.addEventListener('click', () => exportCSV(false));
+                dom.btnLumpCSV.addEventListener('click', () => exportCSV(true));
+                dom.btnLogDeposit.addEventListener('click', logDeposit);
+                dom.btnClearDeposits.addEventListener('click', clearDeposits);
+                dom.depQuick.addEventListener('change', handleQuickDeposit);
+                dom.btnFetchPrices.addEventListener('click', fetchStockPrices);
+                dom.btnFetchGrailPrice.addEventListener('click', fetchGrailPrice);
+                
+                // Simulator buttons
+                dom.btnSimBuy.addEventListener('click', () => {
+                    const currentShares = getNum(dom.etfShares);
+                    const simShares = getNum(dom.simShares);
+                    dom.etfShares.value = Math.max(0, currentShares - simShares);
+                    calculate();
+                });
+
+                dom.btnSimSell.addEventListener('click', () => {
+                    const currentShares = getNum(dom.etfShares);
+                    const simShares = getNum(dom.simShares);
+                    dom.etfShares.value = currentShares + simShares;
+                    calculate();
+                });
+                
+                dom.btnSetNavTo10.addEventListener('click', () => {
+                    const aumText = dom.etfAUM.textContent;
+                    const aum = parseFloat(aumText.replace(/[^0-9.-]+/g,""));
+                    if (aum > 0) {
+                        dom.etfShares.value = Math.round(aum / 10);
+                        calculate();
+                    }
+                });
+
+
+                // Accordion Toggles
+                dom.btnEtfHelp.addEventListener('click', () => {
+                   const help = dom.etfHelp;
+                   help.style.display = help.style.display === 'block' ? 'none' : 'block';
+                });
+                dom.btnSafetyHelp.addEventListener('click', (e) => {
+                   const help = dom.safetyHelp;
+                   const isHidden = help.style.display === 'none' || help.style.display === '';
+                   help.style.display = isHidden ? 'block' : 'none';
+                   e.target.textContent = isHidden ? 'Hide Details' : 'Show Details';
+                });
+            }
+
+            // --- INITIALIZATION ---
+            function init() {
+                loadState();
+                setupEventListeners();
+                calculate();
+            }
+
+            init();
+        });
+    </script>
+</body>
+</html>
+
