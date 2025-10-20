@@ -322,68 +322,96 @@
       </div>
     </section>
 
-    <!-- xGRAIL Real Yield panel -->
-    <section class="card" style="margin-top:16px">
-      <div class="row" style="justify-content:space-between;align-items:flex-start;">
-        <h2 class="title">xGRAIL Real Yield → Daily Rewards</h2>
-        <a href="https://app.camelot.exchange/xgrail/staking" target="_blank" class="btn ghost">Go to Staking ↗</a>
-      </div>
-      <div class="note">Use this to auto‑calculate your <b>Daily DeFi rewards (USD)</b> from xGRAIL. Toggle on, then adjust the fields. Add a GRAIL price to auto‑fill Stake USD.</div>
-      <div class="hr"></div>
-      <div class="row" style="gap:10px; align-items:flex-end; flex-wrap:wrap">
-        <label class="pill"><input type="checkbox" id="xgUse"/> Use xGRAIL to set Daily</label>
-        <div style="width:140px">
-          <label class="small muted">xGRAIL allocated</label>
-          <input class="input" id="xgAmount" type="number" step="0.001" value="130.005"/>
-        </div>
-        <div style="flex-grow: 1; min-width: 380px;">
-            <div class="row" style="align-items:flex-end; gap:8px; flex-wrap: nowrap;">
-                <div style="flex-grow: 1;">
-                    <label class="small muted">CoinGecko ID (<a href="https://www.coingecko.com/" target="_blank" style="color:var(--text-secondary)">Find ID</a>)</label>
-                    <div class="row" style="gap:4px; flex-wrap: nowrap;">
-                        <input class="input" id="grailCoingeckoId" value="camelot-token"/>
-                        <button class="btn" id="btnFetchGrailPrice" style="padding: 10px 12px;">⚡</button>
+    <!-- DeFi Yield Panels -->
+    <div class="grid grid-2" style="margin-top:16px;">
+        <!-- xGRAIL Real Yield panel -->
+        <section class="card">
+          <div class="row" style="justify-content:space-between;align-items:flex-start;">
+            <h2 class="title">xGRAIL Real Yield → Daily Rewards</h2>
+            <a href="https://app.camelot.exchange/xgrail/staking" target="_blank" class="btn ghost">Go to Staking ↗</a>
+          </div>
+          <div class="note">Use this to auto‑calculate your <b>Daily DeFi rewards (USD)</b> from xGRAIL.</div>
+          <div class="hr"></div>
+          <div class="row" style="gap:10px; align-items:flex-end; flex-wrap:wrap">
+            <label class="pill"><input type="checkbox" id="xgUse"/> Use xGRAIL to set Daily</label>
+            <div style="width:140px">
+              <label class="small muted">xGRAIL allocated</label>
+              <input class="input" id="xgAmount" type="number" step="0.001" value="130.005"/>
+            </div>
+            <div style="flex-grow: 1; min-width: 380px;">
+                <div class="row" style="align-items:flex-end; gap:8px; flex-wrap: nowrap;">
+                    <div style="flex-grow: 1;">
+                        <label class="small muted">CoinGecko ID (<a href="https://www.coingecko.com/" target="_blank" style="color:var(--text-secondary)">Find ID</a>)</label>
+                        <div class="row" style="gap:4px; flex-wrap: nowrap;">
+                            <input class="input" id="grailCoingeckoId" value="camelot-token"/>
+                            <button class="btn" id="btnFetchGrailPrice" style="padding: 10px 12px;">⚡</button>
+                        </div>
+                    </div>
+                    <div style="width:140px">
+                        <label class="small muted">GRAIL price (USD)</label>
+                        <input class="input" id="xgPrice" type="number" step="0.01" placeholder="e.g., 42.00"/>
                     </div>
                 </div>
-                <div style="width:140px">
-                    <label class="small muted">GRAIL price (USD)</label>
-                    <input class="input" id="xgPrice" type="number" step="0.01" placeholder="e.g., 42.00"/>
-                </div>
             </div>
-        </div>
-        <div style="width:150px">
-          <label class="small muted">Method</label>
-          <select id="xgMethod" class="input">
-            <option value="apy" selected>APY %</option>
-            <option value="epoch">$ / xGRAIL / epoch</option>
-          </select>
-        </div>
-        <div id="xgAPYWrap" style="width:140px">
-          <label class="small muted">APY (%)</label>
-          <input class="input" id="xgAPY" type="number" step="0.01" value="38.61"/>
-        </div>
-        <div id="xgUSDWrap" style="width:180px">
-          <label class="small muted">Stake value (USD)</label>
-          <input class="input" id="xgUsdValue" type="number" step="0.01" placeholder="e.g., 5000"/>
-        </div>
-        <div id="xgEpochWrap" style="display:none;gap:10px" class="row">
-          <div style="width:180px">
-            <label class="small muted">$ / xGRAIL / epoch</label>
-            <input class="input" id="xgPerEpoch" type="number" step="0.01" value="1.53"/>
+            <div style="width:150px">
+              <label class="small muted">Method</label>
+              <select id="xgMethod" class="input">
+                <option value="apy" selected>APY %</option>
+                <option value="epoch">$ / xGRAIL / epoch</option>
+              </select>
+            </div>
+            <div id="xgAPYWrap" style="width:140px">
+              <label class="small muted">APY (%)</label>
+              <input class="input" id="xgAPY" type="number" step="0.01" value="38.61"/>
+            </div>
+            <div id="xgUSDWrap" style="width:180px">
+              <label class="small muted">Stake value (USD)</label>
+              <input class="input" id="xgUsdValue" type="number" step="0.01" placeholder="e.g., 5000"/>
+            </div>
+            <div id="xgEpochWrap" style="display:none;gap:10px" class="row">
+              <div style="width:180px">
+                <label class="small muted">$ / xGRAIL / epoch</label>
+                <input class="input" id="xgPerEpoch" type="number" step="0.01" value="1.53"/>
+              </div>
+              <div style="width:130px">
+                <label class="small muted">Epoch days</label>
+                <input class="input" id="xgEpochDays" type="number" step="1" value="7"/>
+              </div>
+            </div>
+            <div style="width:120px">
+              <label class="small muted">Dealloc fee %</label>
+              <input class="input" id="xgFee" type="number" step="0.01" value="0.5"/>
+            </div>
+            <div class="badge">Computed daily from xGRAIL: <b id="xgDaily" style="margin-left:6px">$0.00</b></div>
           </div>
-          <div style="width:130px">
-            <label class="small muted">Epoch days</label>
-            <input class="input" id="xgEpochDays" type="number" step="1" value="7"/>
-          </div>
-        </div>
-        <div style="width:120px">
-          <label class="small muted">Dealloc fee %</label>
-          <input class="input" id="xgFee" type="number" step="0.01" value="0.5"/>
-        </div>
-        <div class="badge">Computed daily from xGRAIL: <b id="xgDaily" style="margin-left:6px">$0.00</b></div>
-      </div>
-      <div class="note" style="margin-top:8px">When enabled, this replaces the manual Daily DeFi rewards field below. You can still edit afterwards.</div>
-    </section>
+        </section>
+
+        <!-- Mortgage Offset Panel -->
+        <section class="card">
+            <h2 class="title">🏦 Mortgage Offset Vault</h2>
+            <div class="note">Use yield from your on-chain buffer to offset mortgage interest.</div>
+            <div class="hr"></div>
+             <div class="row" style="gap:10px; align-items:flex-end; flex-wrap:wrap">
+                <div style="width:180px">
+                    <label class="small muted">On-Chain Buffer (Dolomite)</label>
+                    <input class="input" id="dolomiteBalance" type="number" step="0.01" value="3102.18"/>
+                </div>
+                <div style="width:140px">
+                    <label class="small muted">Buffer APY (%)</label>
+                    <input class="input" id="dolomiteApy" type="number" step="0.01" value="9.33"/>
+                </div>
+                <div style="width:180px">
+                    <label class="small muted">Mortgage Interest Rate (%)</label>
+                    <input class="input" id="mortgageRate" type="number" step="0.01" value="5.5"/>
+                </div>
+                <label class="pill"><input type="checkbox" id="dolomiteInclude"/> Include in Daily Rewards</label>
+             </div>
+             <div class="row" style="margin-top: 12px; gap:12px; flex-wrap:wrap">
+                <div class="badge">Annual Yield: <b id="dolomiteYield" style="margin-left:6px">$0</b></div>
+                <div class="badge">Effective Equity vs. Loan: <b id="dolomiteEquity" style="margin-left:6px">$0</b></div>
+            </div>
+        </section>
+    </div>
 
     <section class="grid grid-2" style="margin-top:16px">
       <div class="card">
@@ -396,10 +424,6 @@
             <div>
                 <label class="small muted">Weekly Cash Contribution ($)</label>
                 <input class="input" type="number" id="weeklyCash" value="500" min="0" step="1" />
-            </div>
-             <div>
-                <label class="small muted">USDC Buffer ($)</label>
-                <input class="input" type="number" id="usdcBuffer" value="2000" min="0" step="1" />
             </div>
             <div>
                 <label class="small muted">Harvest cadence (DeFi)</label>
@@ -480,18 +504,16 @@
         </div>
         <div id="safetyHelp" class="accordion">
             <div class="hr"></div>
-            <h4>1. Maintain a USDC Buffer (2–3k On-Chain)</h4>
-            <p><strong>Purpose:</strong> This is your “stability tank.” It smooths weekly payouts when yields dip or gas/bridge costs spike.</p>
-            <p><strong>How it works:</strong></p>
-            <ul>
-                <li>Hold it in your xGRAIL wallet, vault, or an Arbitrum savings contract (e.g., Aave USDC or Overnight.fi USD+).</li>
-                <li>Don’t count this as investable cash — it’s a liquidity cushion.</li>
-                <li>When your DeFi rewards for the week are below your target (say, &lt; $180 harvest), you draw from the buffer instead of skipping a week.</li>
-                <li>When yields are strong (&gt; $30/day), replenish the buffer automatically.</li>
-            </ul>
-            <p><strong>Target range:</strong> Keep $2,000 – $3,000 USDC, roughly equal to 2–3 weeks of planned harvests.</p>
+            <h4>1. Maintain a Multi-Layered Cushion</h4>
+             <p><strong>Purpose:</strong> To create a bulletproof system that provides liquidity and stability from both on-chain and traditional finance sources.</p>
+             <p><strong>How it works:</strong></p>
+             <ul>
+                <li>Keep **$2-3k in USDC on Dolomite** earning high yield (~9.3%). This is your primary, high-earning buffer.</li>
+                <li>Park another **$1-2k in a Treasury ETF like SGOV** (~5.2%) in your brokerage account. This is your risk-free, off-chain backup.</li>
+             </ul>
+             <p>This combo gives you a blended yield of ~7.3% on a ~$5k cushion, nearly offsetting $350-400/year of mortgage interest while providing robust liquidity.</p>
 
-            <h4>2. Add a Short-Term Treasury ETF (5–10%)</h4>
+            <h4>2. Add a Short-Term Treasury ETF (5–10%) to Your Portfolio</h4>
             <p><strong>Purpose:</strong> Acts as a TradFi “cash proxy” and yield stabilizer. When equities or DeFi are volatile, this holds steady and still pays interest (~5% annually).</p>
             <table style="max-width: 600px;">
                 <thead><tr><th>ETF</th><th>Yield</th><th>Duration</th><th>Risk</th><th>Use</th></tr></thead>
@@ -501,13 +523,7 @@
                     <tr><td>SHV (Short Treasury)</td><td>≈ 4.9 %</td><td>~0.4 yr</td><td>Low</td><td>Blend of 1–12 mo T-Bills</td></tr>
                 </tbody>
             </table>
-             <p><strong>Allocation example:</strong></p>
-            <ul>
-                <li>90 – 95 % to your dividend equities (DTE, AWK, ENB, NEE, SCHD, EXC)</li>
-                <li>5 – 10 % to SGOV or BIL</li>
-                <li>When DeFi yields shrink or gas fees rise, pause stock buys and redirect weekly deposits here until DeFi stabilizes. This keeps your blended yield close to 5 % even if DeFi dries up.</li>
-            </ul>
-
+            
             <h4>3. Bridge-Fee Threshold Automation</h4>
              <p><strong>Purpose:</strong> Avoid wasting small harvests on Arbitrum → bank bridge fees.</p>
              <p><strong>Guideline:</strong> Wait until your on-chain USDC balance ≥ $100 before bridging to your brokerage or CEX. You can still log the amount in your planner for tracking, even if it stays on-chain that week.</p>
@@ -520,10 +536,7 @@
                 </tbody>
             </table>
             
-            <h4>4. Optional: Stable-Yield Parking</h4>
-            <p>If you want to earn on your USDC buffer itself: Use <span class="kbd">Overnight.fi USD+</span>, <span class="kbd">Angle sDAI</span>, or <span class="kbd">Aave USDC</span> on Arbitrum for 5–8 % APY. These are relatively safe, daily-rebalancing stable-yield protocols.</p>
-
-            <h4>5. Emergency-Mode Rule (Optional)</h4>
+            <h4>4. Emergency-Mode Rule (Optional)</h4>
             <p>If DeFi yield &lt; $10/day for 2+ weeks:</p>
             <ul>
                 <li>Pause new stock buys.</li>
@@ -633,7 +646,8 @@
                 'simShares', 'btnSimBuy', 'btnSimSell', 'btnSetNavTo10',
                 'xgUse', 'xgAmount', 'xgPrice', 'xgMethod', 'xgAPY', 'xgUsdValue', 'xgPerEpoch', 'xgEpochDays', 'xgFee', 'xgDaily',
                 'xgAPYWrap', 'xgUSDWrap', 'xgEpochWrap', 'grailCoingeckoId', 'btnFetchGrailPrice',
-                'daily', 'cadence', 'fees', 'pctStocks', 'pctDefi', 'years', 'growth', 'yield', 'drip', 'weeklyCash', 'usdcBuffer',
+                'dolomiteBalance', 'dolomiteApy', 'mortgageRate', 'dolomiteInclude', 'dolomiteYield', 'dolomiteEquity',
+                'daily', 'cadence', 'fees', 'pctStocks', 'pctDefi', 'years', 'growth', 'yield', 'drip', 'weeklyCash',
                 'perHarvest', 'perWeek', 'perMonth', 'btnCalc', 'btnCSV',
                 'btnSafetyHelp', 'safetyHelp',
                 'depAmount', 'depQuick', 'depDate', 'btnLogDeposit', 'btnClearDeposits',
@@ -978,9 +992,23 @@
                     dom.daily.value = xgDaily.toFixed(2);
                     dailyDeFi = xgDaily;
                 }
+                
+                // Mortgage Offset Calculation
+                const dolomiteBalance = getNum(dom.dolomiteBalance);
+                const dolomiteApy = getNum(dom.dolomiteApy) / 100;
+                const mortgageRate = getNum(dom.mortgageRate) / 100;
+                const annualDolomiteYield = dolomiteBalance * dolomiteApy;
+                dom.dolomiteYield.textContent = formatCurrency(annualDolomiteYield);
+                const effectiveEquity = mortgageRate > 0 ? annualDolomiteYield / mortgageRate : 0;
+                dom.dolomiteEquity.textContent = formatCurrency(effectiveEquity);
+                
+                if (dom.dolomiteInclude.checked) {
+                    dailyDeFi += annualDolomiteYield / 365.25;
+                    dom.daily.value = dailyDeFi.toFixed(2);
+                }
+
 
                 const weeklyCash = getNum(dom.weeklyCash);
-                const usdcBuffer = getNum(dom.usdcBuffer);
                 const cadence = dom.cadence.value;
                 const fees = getNum(dom.fees);
                 const pctStocks = getNum(dom.pctStocks) / 100;
@@ -1040,7 +1068,7 @@
 
                 // Blended Yield
                 const includeBrokerage = dom.broInclude.checked;
-                const principal = (includeBrokerage ? brokerageMarketValue : 0) + (xgUsdValue || 0);
+                const principal = (includeBrokerage ? brokerageMarketValue : 0) + (xgUsdValue || 0) + dolomiteBalance;
                 if (principal > 0) {
                     const blendedYield = (onChainYearly + divYear1) / principal * 100;
                     dom.sumBlendedYield.textContent = `${formatNumber(blendedYield, 2)}%`;
@@ -1051,7 +1079,7 @@
                 // Update ETF Wizard
                 const etfShares = getNum(dom.etfShares);
                 const startNav = getNum(dom.etfStartNav);
-                const aum = xgUsdValue + brokerageMarketValue + usdcBuffer;
+                const aum = xgUsdValue + brokerageMarketValue + dolomiteBalance;
                 const liveNav = etfShares > 0 ? aum / etfShares : 0;
                 const change = startNav > 0 ? (liveNav - startNav) / startNav * 100 : 0;
                 
