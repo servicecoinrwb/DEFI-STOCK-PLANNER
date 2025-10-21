@@ -388,7 +388,10 @@
 
         <!-- Mortgage Offset Panel -->
         <section class="card">
-            <h2 class="title">🏦 Mortgage Offset Vault</h2>
+            <div class="row" style="justify-content:space-between;align-items:flex-start;">
+                <h2 class="title">🏦 Mortgage Offset Vault</h2>
+                <a href="https://app.dolomite.io/earn" target="_blank" class="btn ghost">Go to Dolomite ↗</a>
+            </div>
             <div class="note">Use yield from your on-chain buffer to offset mortgage interest.</div>
             <div class="hr"></div>
              <div class="row" style="gap:10px; align-items:flex-end; flex-wrap:wrap">
@@ -401,8 +404,12 @@
                     <input class="input" id="dolomiteApy" type="number" step="0.01" value="9.33"/>
                 </div>
                 <div style="width:180px">
-                    <label class="small muted">Mortgage Interest Rate (%)</label>
+                    <label class="small muted">Mortgage Rate (%)</label>
                     <input class="input" id="mortgageRate" type="number" step="0.01" value="5.5"/>
+                </div>
+                 <div style="width:180px">
+                    <label class="small muted">Current Principal Balance</label>
+                    <input class="input" id="mortgagePrincipal" type="number" step="0.01" value="38558.74"/>
                 </div>
                 <label class="pill"><input type="checkbox" id="dolomiteInclude"/> Include in Daily Rewards</label>
              </div>
@@ -646,7 +653,7 @@
                 'simShares', 'btnSimBuy', 'btnSimSell', 'btnSetNavTo10',
                 'xgUse', 'xgAmount', 'xgPrice', 'xgMethod', 'xgAPY', 'xgUsdValue', 'xgPerEpoch', 'xgEpochDays', 'xgFee', 'xgDaily',
                 'xgAPYWrap', 'xgUSDWrap', 'xgEpochWrap', 'grailCoingeckoId', 'btnFetchGrailPrice',
-                'dolomiteBalance', 'dolomiteApy', 'mortgageRate', 'dolomiteInclude', 'dolomiteYield', 'dolomiteEquity',
+                'dolomiteBalance', 'dolomiteApy', 'mortgageRate', 'mortgagePrincipal', 'dolomiteInclude', 'dolomiteYield', 'dolomiteEquity',
                 'daily', 'cadence', 'fees', 'pctStocks', 'pctDefi', 'years', 'growth', 'yield', 'drip', 'weeklyCash',
                 'perHarvest', 'perWeek', 'perMonth', 'btnCalc', 'btnCSV',
                 'btnSafetyHelp', 'safetyHelp',
