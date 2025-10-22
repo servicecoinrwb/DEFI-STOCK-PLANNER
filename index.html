@@ -415,6 +415,7 @@
              </div>
              <div class="row" style="margin-top: 12px; gap:12px; flex-wrap:wrap">
                 <div class="badge">Annual Yield: <b id="dolomiteYield" style="margin-left:6px">$0</b></div>
+                <div class="badge">Monthly Yield: <b id="dolomiteMonthlyYield" style="margin-left:6px">$0</b></div>
                 <div class="badge">Effective Equity vs. Loan: <b id="dolomiteEquity" style="margin-left:6px">$0</b></div>
             </div>
         </section>
@@ -653,7 +654,7 @@
                 'simShares', 'btnSimBuy', 'btnSimSell', 'btnSetNavTo10',
                 'xgUse', 'xgAmount', 'xgPrice', 'xgMethod', 'xgAPY', 'xgUsdValue', 'xgPerEpoch', 'xgEpochDays', 'xgFee', 'xgDaily',
                 'xgAPYWrap', 'xgUSDWrap', 'xgEpochWrap', 'grailCoingeckoId', 'btnFetchGrailPrice',
-                'dolomiteBalance', 'dolomiteApy', 'mortgageRate', 'mortgagePrincipal', 'dolomiteInclude', 'dolomiteYield', 'dolomiteEquity',
+                'dolomiteBalance', 'dolomiteApy', 'mortgageRate', 'mortgagePrincipal', 'dolomiteInclude', 'dolomiteYield', 'dolomiteMonthlyYield', 'dolomiteEquity',
                 'daily', 'cadence', 'fees', 'pctStocks', 'pctDefi', 'years', 'growth', 'yield', 'drip', 'weeklyCash',
                 'perHarvest', 'perWeek', 'perMonth', 'btnCalc', 'btnCSV',
                 'btnSafetyHelp', 'safetyHelp',
@@ -1006,6 +1007,7 @@
                 const mortgageRate = getNum(dom.mortgageRate) / 100;
                 const annualDolomiteYield = dolomiteBalance * dolomiteApy;
                 dom.dolomiteYield.textContent = formatCurrency(annualDolomiteYield);
+                dom.dolomiteMonthlyYield.textContent = formatCurrency(annualDolomiteYield / 12);
                 const effectiveEquity = mortgageRate > 0 ? annualDolomiteYield / mortgageRate : 0;
                 dom.dolomiteEquity.textContent = formatCurrency(effectiveEquity);
                 
