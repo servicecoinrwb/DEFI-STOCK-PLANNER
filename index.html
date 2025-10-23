@@ -160,6 +160,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 10px;
         }
         th, td {
             padding: 12px 10px;
@@ -198,7 +199,11 @@
             line-height: 1.6;
             color: var(--text-secondary);
         }
-        .accordion ul { margin: 0; padding-left: 20px;}
+        .accordion ul, .accordion ol { margin: 8px 0 8px 20px; padding: 0;}
+        .accordion li { margin-bottom: 5px; }
+        .accordion table { max-width: 500px; margin: 10px 0; }
+        .accordion th, .accordion td { font-size: 13px; padding: 6px 8px; }
+
         .kbd {
             background-color: var(--bg-tertiary);
             border: 1px solid var(--border-color);
@@ -234,11 +239,16 @@
         <div class="badge">Blended income rate: <b id="sumBlendedYield" style="margin-left:6px">–</b></div>
       </div>
       <div class="row" style="gap:10px; margin-top:10px; align-items:flex-end; flex-wrap:wrap">
-        <div style="width:220px">
+        <div style="width:180px">
           <label class="small muted">Brokerage balance (USD)</label>
-          <input class="input" id="broBalance" type="number" step="0.01" value="0"/>
+          <input class="input" id="broBalance" type="number" step="0.01" value="1230.00"/>
         </div>
-        <label class="pill"><input type="checkbox" id="broInclude" checked/> Include brokerage in blended rate</label>
+        <div style="width:150px">
+          <label class="small muted">Interest Rate (%)</label>
+          <input class="input" id="broInterestRate" type="number" step="0.01" value="3.75"/>
+        </div>
+        <label class="pill"><input type="checkbox" id="broInterestInclude"/> Include Interest in Rewards</label>
+        <label class="pill"><input type="checkbox" id="broInclude" checked/> Include in Blended Rate</label>
       </div>
       <div class="note" style="margin-top:6px">Dividends assume average yield and current contribution rate. If DRIP is on, dividends are reinvested (shown here for comparison).</div>
     </section>
@@ -554,6 +564,43 @@
         </div>
     </section>
 
+    <!-- Rebalancing Guide Card -->
+    <section class="card" style="margin-top:16px">
+        <div class="row" style="justify-content:space-between; align-items:flex-start;">
+            <h2 class="title">⚙️ Portfolio Rebalancing Guide</h2>
+            <button class="btn ghost" id="btnRebalanceHelp">Show Details</button>
+        </div>
+         <div id="rebalanceHelp" class="accordion">
+            <div class="hr"></div>
+             <h4>1️⃣ What is Rebalancing?</h4>
+             <p>Rebalancing just means realigning your portfolio back to your target allocation percentages. Over time, some holdings will go up faster while others lag, causing your weights to drift. Quarterly rebalancing brings those back in line.</p>
+             
+             <h4>2️⃣ Why Do It?</h4>
+             <table>
+                 <thead><tr><th>Benefit</th><th>Explanation</th></tr></thead>
+                 <tbody>
+                    <tr><td>✅ Keeps risk consistent</td><td>Prevents one hot sector from dominating.</td></tr>
+                    <tr><td>✅ Enforces “buy low, sell high”</td><td>You trim winners and top-up laggards.</td></tr>
+                    <tr><td>✅ Keeps yield balanced</td><td>Prevents average income rate from drifting.</td></tr>
+                    <tr><td>✅ Makes compounding smoother</td><td>Keeps contributions aligned with strategy.</td></tr>
+                 </tbody>
+             </table>
+
+             <h4>3️⃣ How to Rebalance — Step-by-Step</h4>
+             <ol>
+                 <li><strong>Check Current Allocation:</strong> Once per quarter, compare your broker's % holdings to your target % in this planner.</li>
+                 <li><strong>Use New Contributions First:</strong> Direct more of your next weekly buys into the under-weight tickers. This avoids selling and taxes.</li>
+                 <li><strong>Optional Trim (If Needed):</strong> Only if a position grows far above target (e.g., > +3%), sell a small amount and redirect. Do this mainly in tax-advantaged accounts or if the drift is large.</li>
+                 <li><strong>Update Your Planner:</strong> Update "Cum Invest $" and "Cum Shares" here to keep projections accurate.</li>
+             </ol>
+
+             <h4>4️⃣ How Often Is “Quarterly”?</h4>
+             <p>4 times per year (e.g., Jan 1, Apr 1, Jul 1, Oct 1) is plenty. Consistency matters more than frequency.</p>
+             
+             <p><strong>✅ TL;DR:</strong> Review quarterly, use new buys to adjust, trim rarely, update planner.</p>
+        </div>
+    </section>
+
 
     <!-- Deposits Logger -->
     <section class="card" style="margin-top:16px">
@@ -649,7 +696,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             // --- DOM ELEMENT SELECTORS ---
             const ids = [
-                'sumDaily', 'sumDefiYear', 'sumToStocksYear', 'sumDivYear', 'sumCombinedYear', 'sumBlendedYield', 'broBalance', 'broInclude',
+                'sumDaily', 'sumDefiYear', 'sumToStocksYear', 'sumDivYear', 'sumCombinedYear', 'sumBlendedYield', 
+                'broBalance', 'broInterestRate', 'broInterestInclude', 'broInclude',
                 'etfTicker', 'etfName', 'etfStartNav', 'etfShares', 'etfNav', 'etfAUM', 'etfChange', 'btnEtfHelp', 'etfHelp',
                 'simShares', 'btnSimBuy', 'btnSimSell', 'btnSetNavTo10',
                 'xgUse', 'xgAmount', 'xgPrice', 'xgMethod', 'xgAPY', 'xgUsdValue', 'xgPerEpoch', 'xgEpochDays', 'xgFee', 'xgDaily',
@@ -658,6 +706,7 @@
                 'daily', 'cadence', 'fees', 'pctStocks', 'pctDefi', 'years', 'growth', 'yield', 'drip', 'weeklyCash',
                 'perHarvest', 'perWeek', 'perMonth', 'btnCalc', 'btnCSV',
                 'btnSafetyHelp', 'safetyHelp',
+                'btnRebalanceHelp', 'rebalanceHelp',
                 'depAmount', 'depQuick', 'depDate', 'btnLogDeposit', 'btnClearDeposits',
                 'totalPct', 'lump', 'btnLumpCSV', 'btnApplyLumpSplit', 'btnAdd', 'tbody', 'btnFetchPrices', 'apiKey'
             ];
@@ -1015,6 +1064,15 @@
                     dailyDeFi += annualDolomiteYield / 365.25;
                     dom.daily.value = dailyDeFi.toFixed(2);
                 }
+                
+                // Brokerage Interest Calculation
+                const broBalance = getNum(dom.broBalance);
+                const broInterestRate = getNum(dom.broInterestRate) / 100;
+                if (dom.broInterestInclude.checked && broBalance > 0 && broInterestRate > 0) {
+                    const dailyBrokerageInterest = (broBalance * broInterestRate) / 365.25;
+                    dailyDeFi += dailyBrokerageInterest;
+                    dom.daily.value = dailyDeFi.toFixed(2);
+                }
 
 
                 const weeklyCash = getNum(dom.weeklyCash);
@@ -1255,6 +1313,12 @@
                 });
                 dom.btnSafetyHelp.addEventListener('click', (e) => {
                    const help = dom.safetyHelp;
+                   const isHidden = help.style.display === 'none' || help.style.display === '';
+                   help.style.display = isHidden ? 'block' : 'none';
+                   e.target.textContent = isHidden ? 'Hide Details' : 'Show Details';
+                });
+                 dom.btnRebalanceHelp.addEventListener('click', (e) => {
+                   const help = dom.rebalanceHelp;
                    const isHidden = help.style.display === 'none' || help.style.display === '';
                    help.style.display = isHidden ? 'block' : 'none';
                    e.target.textContent = isHidden ? 'Hide Details' : 'Show Details';
