@@ -309,7 +309,7 @@
         <div class="hr"></div>
         <h3 class="title" style="font-size:18px">ETF Wizard — Quick Tutorial</h3>
         <p class="note">Simulate your own ETF built from your plan. This is just for fun, not a real security.</p>
-        <ol style="margin:0 0 10px 18px; padding:0; color: var(--text-secondary); line-height: 1.6;">
+        <ol>
           <li><b>Name it:</b> Pick a fun <span class="kbd">Ticker</span> and <span class="kbd">Name</span>.</li>
           <li><b>Choose a baseline:</b> Set <span class="kbd">Start NAV</span> (e.g., $10.00) and <span class="kbd">Shares Outstanding</span>.</li>
           <li><b>We compute NAV:</b> <i>Live NAV</i> = (<b>Stake USD</b> + <b>Annual stock contributions</b>) ÷ <b>Shares</b>.</li>
@@ -497,7 +497,7 @@
 
       <div class="card">
         <h2 class="title">2) How It Works</h2>
-        <ol style="margin:0 0 8px 18px; padding:0; color: var(--text-secondary); line-height: 1.6;">
+        <ol>
           <li>Claim GRAIL rewards → swap to USDC on Arbitrum.</li>
           <li>Bridge and withdraw to your bank (batched weekly to reduce fees).</li>
           <li>Fund your broker with DeFi rewards + weekly cash contributions.</li>
@@ -533,7 +533,7 @@
 
             <h4>2. Add a Short-Term Treasury ETF (5–10%) to Your Portfolio</h4>
             <p><strong>Purpose:</strong> Acts as a TradFi “cash proxy” and yield stabilizer. When equities or DeFi are volatile, this holds steady and still pays interest (~5% annually).</p>
-            <table style="max-width: 600px;">
+            <table>
                 <thead><tr><th>ETF</th><th>Yield</th><th>Duration</th><th>Risk</th><th>Use</th></tr></thead>
                 <tbody>
                     <tr><td>SGOV (iShares 0-3 Month Treasury ETF)</td><td>≈ 5.3 %</td><td>~0.1 yr</td><td>Extremely low</td><td>Best pure safety cash park</td></tr>
@@ -545,7 +545,7 @@
             <h4>3. Bridge-Fee Threshold Automation</h4>
              <p><strong>Purpose:</strong> Avoid wasting small harvests on Arbitrum → bank bridge fees.</p>
              <p><strong>Guideline:</strong> Wait until your on-chain USDC balance ≥ $100 before bridging to your brokerage or CEX. You can still log the amount in your planner for tracking, even if it stays on-chain that week.</p>
-             <table style="max-width: 400px;">
+             <table>
                 <thead><tr><th>Harvest</th><th>After-Fee Net</th><th>Action</th></tr></thead>
                 <tbody>
                     <tr><td>$80</td><td>$74</td><td>Hold in buffer</td></tr>
@@ -598,6 +598,55 @@
              <p>4 times per year (e.g., Jan 1, Apr 1, Jul 1, Oct 1) is plenty. Consistency matters more than frequency.</p>
              
              <p><strong>✅ TL;DR:</strong> Review quarterly, use new buys to adjust, trim rarely, update planner.</p>
+        </div>
+    </section>
+    
+    <!-- Tax Prep Sheet Card -->
+     <section class="card" style="margin-top:16px">
+        <div class="row" style="justify-content:space-between; align-items:flex-start;">
+            <h2 class="title">📗 Tax Prep Sheet & Checklist</h2>
+            <button class="btn ghost" id="btnTaxHelp">Show Details</button>
+        </div>
+         <div id="taxHelp" class="accordion">
+            <div class="hr"></div>
+             <p>This section helps organize information for tax season, aligning with your DeFi → Dividends strategy. <strong>Note: This is not tax advice. Consult a qualified professional.</strong></p>
+             
+             <h4>SHEET 1 – DeFi Income Log</h4>
+             <p><strong>Purpose:</strong> Track all taxable events from your DeFi activities (claiming rewards, swapping tokens, earning interest).</p>
+             <p><strong>Recommendation:</strong> Use a dedicated crypto tax software (like Koinly, CoinLedger, etc.). These tools connect to your wallets/exchanges via API or public address and automatically categorize transactions.</p>
+             <p><strong>Key Data to Ensure is Captured:</strong></p>
+             <ul>
+                 <li>Date of each transaction (reward claim, swap, interest received).</li>
+                 <li>Type of transaction (Income, Trade).</li>
+                 <li>Assets involved (e.g., GRAIL → USDC).</li>
+                 <li>USD value at the time of the transaction (this determines income/cost basis).</li>
+                 <li>Fees paid in crypto.</li>
+             </ul>
+              <p>🟢 <strong>Tip:</strong> The total USD value of claimed rewards + interest earned (like from Dolomite) generally counts as taxable income for the year.</p>
+
+             <h4>SHEET 2 – Stock Dividend Summary</h4>
+              <p><strong>Purpose:</strong> Understand your dividend income stream and verify against official documents.</p>
+              <p><strong>Source Document:</strong> Your broker (e.g., Robinhood) will issue a **Form 1099-DIV** early each year summarizing all dividend income (Ordinary vs. Qualified).</p>
+              <p><strong>Planner Use:</strong> The "Est. dividends in year 1" figure in the summary card provides a preview. Use your 1099-DIV for actual tax filing.</p>
+              <p>🟢 <strong>Tip:</strong> Reinvested dividends (DRIP) are still taxable in the year they are received. Your broker tracks the adjusted cost basis automatically.</p>
+              
+             <h4>SHEET 3 – Combined Summary (Planner Data)</h4>
+             <p>Use these figures from your planner as a high-level overview for your accountant:</p>
+             <ul>
+                 <li><strong>DeFi Income ($):</strong> Total from your crypto tax software report (Sheet 1).</li>
+                 <li><strong>Stock Dividends ($):</strong> Total from your broker's 1099-DIV (Sheet 2).</li>
+                 <li><strong>Total Cashflow ($):</strong> Sum of the above.</li>
+             </ul>
+
+             <h4>SHEET 4 – Quick Tax Checklist</h4>
+             <ul>
+                <li>✅ Crypto transaction history downloaded/synced to tax software? (Sheet 1)</li>
+                <li>✅ Stock 1099-DIV received from broker? (Sheet 2)</li>
+                <li>✅ Verified no double counting (e.g., reporting brokerage interest from 1099-INT, not manually)?</li>
+                <li>✅ Confirmed broker is tracking cost basis for reinvested dividends?</li>
+                <li>✅ Gathered records for any stock/crypto sales (if applicable)?</li>
+                <li>✅ Collected records for potential deductions (e.g., donations, relevant expenses)?</li>
+             </ul>
         </div>
     </section>
 
@@ -707,6 +756,7 @@
                 'perHarvest', 'perWeek', 'perMonth', 'btnCalc', 'btnCSV',
                 'btnSafetyHelp', 'safetyHelp',
                 'btnRebalanceHelp', 'rebalanceHelp',
+                'btnTaxHelp', 'taxHelp',
                 'depAmount', 'depQuick', 'depDate', 'btnLogDeposit', 'btnClearDeposits',
                 'totalPct', 'lump', 'btnLumpCSV', 'btnApplyLumpSplit', 'btnAdd', 'tbody', 'btnFetchPrices', 'apiKey'
             ];
@@ -1319,6 +1369,12 @@
                 });
                  dom.btnRebalanceHelp.addEventListener('click', (e) => {
                    const help = dom.rebalanceHelp;
+                   const isHidden = help.style.display === 'none' || help.style.display === '';
+                   help.style.display = isHidden ? 'block' : 'none';
+                   e.target.textContent = isHidden ? 'Hide Details' : 'Show Details';
+                });
+                dom.btnTaxHelp.addEventListener('click', (e) => {
+                   const help = dom.taxHelp;
                    const isHidden = help.style.display === 'none' || help.style.display === '';
                    help.style.display = isHidden ? 'block' : 'none';
                    e.target.textContent = isHidden ? 'Hide Details' : 'Show Details';
