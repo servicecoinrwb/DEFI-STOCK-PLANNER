@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DeFi to Dividends Planner</title>
+    <!-- Fix for favicon 404 error -->
+    <link rel="icon" href="data:,">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -706,6 +708,7 @@
         <div style="width: 220px;">
             <input class="input" id="apiKey" type="password" placeholder="Enter API Key" value="KSWYMZVUOXTZH0BT">
         </div>
+        <button class="btn" id="btnFetchPrices">⚡ Fetch Live Prices</button>
       </div>
 
       <div class="table-container">
@@ -803,7 +806,9 @@
                 'totalPct', 'lump', 'btnLumpCSV', 'btnApplyLumpSplit', 'btnAdd', 'tbody', 'btnFetchPrices', 'apiKey', 'syncStatus'
             ];
             const dom = {};
-            ids.forEach(id => dom[id] = document.getElementById(id));
+            ids.forEach(id => {
+                dom[id] = document.getElementById(id);
+            });
 
             let valueChart, divChart;
             const DEFAULT_DOC_ID = 'planner_data';
@@ -946,7 +951,7 @@
             // --- HELPER FUNCTIONS ---
             function formatCurrency(val) { return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val); }
             function formatNumber(val, digits = 2) { return new Intl.NumberFormat('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(val); }
-            function getNum(el) { return parseFloat(el.value) || 0; }
+            function getNum(el) { return parseFloat(el?.value) || 0; }
             
             // Debounce implementation
             function debounce(func, delay) {
@@ -957,6 +962,14 @@
                         func.apply(this, args);
                     }, delay);
                 };
+            }
+            
+            // Safely add event listener
+            function addListener(id, event, handler) {
+                const el = dom[id];
+                if (el) {
+                    el.addEventListener(event, handler);
+                } 
             }
 
 
@@ -1327,86 +1340,9 @@
 
                 // Update charts
                 updateProjectionCharts(brokerageMarketValue, yearlyInvest, growth, avgDivYield, years, drip);
-            }
-
-            // --- CHARTING LOGIC ---
-            function updateProjectionCharts(startBalance, yearlyInvest, growth, divYield, years, drip) {
-                const labels = Array.from({ length: years + 1 }, (_, i) => `Year ${i}`);
-                const valueData = [];
-                const divData = [];
-                let currentBalance = startBalance;
-
-                for (let i = 0; i <= years; i++) {
-                    if (i > 0) {
-                        const dividends = currentBalance * divYield;
-                        const appreciation = currentBalance * growth;
-                        currentBalance += appreciation + yearlyInvest;
-                        if(drip) {
-                            currentBalance += dividends;
-                        }
-                    }
-                    valueData.push(currentBalance);
-                    divData.push(currentBalance * divYield);
-                }
-
-                const chartConfig = (label, data, color) => ({
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: label,
-                            data: data,
-                            borderColor: color,
-                            backgroundColor: `${color}33`,
-                            fill: true,
-                            tension: 0.2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                titleColor: '#ffffff',
-                                bodyColor: '#e0e0e0',
-                                callbacks: {
-                                    label: (context) => `${context.dataset.label}: ${formatCurrency(context.raw)}`
-                                }
-                            }
-                        },
-                        scales: {
-                            y: { 
-                                beginAtZero: true, 
-                                ticks: { 
-                                    color: '#e0e0e0',
-                                    callback: (value) => formatCurrency(value)
-                                },
-                                grid: { color: 'rgba(224, 224, 224, 0.2)' }
-                            },
-                            x: { 
-                                ticks: { color: '#e0e0e0' },
-                                grid: { color: 'transparent' }
-                            }
-                        }
-                    }
-                });
-
-                if (!valueChart) {
-                    valueChart = new Chart(document.getElementById('valueChart'), chartConfig('Portfolio Value', valueData, 'rgba(0, 123, 255, 1)'));
-                } else {
-                    valueChart.data.labels = labels;
-                    valueChart.data.datasets[0].data = valueData;
-                    valueChart.update();
-                }
-
-                if (!divChart) {
-                    divChart = new Chart(document.getElementById('divChart'), chartConfig('Annual Dividends', divData, 'rgba(40, 167, 69, 1)'));
-                } else {
-                    divChart.data.labels = labels;
-                    divChart.data.datasets[0].data = divData;
-                    divChart.update();
-                }
+                
+                // Save state after calculation
+                saveState();
             }
 
             // --- EVENT LISTENERS ---
@@ -1421,38 +1357,42 @@
                 inputs.forEach(input => input.addEventListener('input', debouncedCalculate));
                 
                 // xGRAIL UI Toggle
-                dom.xgMethod.addEventListener('change', () => {
+                addListener('xgMethod', 'change', () => {
                     const isApy = dom.xgMethod.value === 'apy';
                     dom.xgAPYWrap.style.display = isApy ? 'block' : 'none';
                     dom.xgUSDWrap.style.display = isApy ? 'block' : 'none';
                     dom.xgEpochWrap.style.display = isApy ? 'none' : 'flex';
                 });
-                dom.xgMethod.dispatchEvent(new Event('change'));
+                // Safe dispatch
+                const xgMethodEl = dom.xgMethod;
+                if (xgMethodEl) {
+                   xgMethodEl.dispatchEvent(new Event('change'));
+                }
 
                 // Auto-sync percentages
-                dom.pctStocks.addEventListener('input', () => {
+                addListener('pctStocks', 'input', () => {
                     dom.pctDefi.value = 100 - getNum(dom.pctStocks);
                     debouncedCalculate();
                 });
-                dom.pctDefi.addEventListener('input', () => {
+                addListener('pctDefi', 'input', () => {
                     dom.pctStocks.value = 100 - getNum(dom.pctDefi);
                     debouncedCalculate();
                 });
                 
                 // Button Clicks (immediate calculation)
-                dom.btnCalc.addEventListener('click', () => { calculate(); saveToFirestore(); });
-                dom.btnAdd.addEventListener('click', () => addRow());
-                dom.btnCSV.addEventListener('click', () => exportCSV(false));
-                dom.btnLumpCSV.addEventListener('click', () => exportCSV(true));
-                dom.btnApplyLumpSplit.addEventListener('click', applyLumpSplit);
-                dom.btnLogDeposit.addEventListener('click', logDeposit);
-                dom.btnClearDeposits.addEventListener('click', clearDeposits);
-                dom.depQuick.addEventListener('change', handleQuickDeposit);
-                dom.btnFetchPrices.addEventListener('click', fetchStockPrices);
-                dom.btnFetchGrailPrice.addEventListener('click', fetchGrailPrice);
+                addListener('btnCalc', 'click', () => { calculate(); saveToFirestore(); });
+                addListener('btnAdd', 'click', () => addRow());
+                addListener('btnCSV', 'click', () => exportCSV(false));
+                addListener('btnLumpCSV', 'click', () => exportCSV(true));
+                addListener('btnApplyLumpSplit', 'click', applyLumpSplit);
+                addListener('btnLogDeposit', 'click', logDeposit);
+                addListener('btnClearDeposits', 'click', clearDeposits);
+                addListener('depQuick', 'change', handleQuickDeposit);
+                addListener('btnFetchPrices', 'click', fetchStockPrices);
+                addListener('btnFetchGrailPrice', 'click', fetchGrailPrice);
                 
                 // Simulator buttons
-                dom.btnSimBuy.addEventListener('click', () => {
+                addListener('btnSimBuy', 'click', () => {
                     const currentShares = getNum(dom.etfShares);
                     const simShares = getNum(dom.simShares);
                     dom.etfShares.value = Math.max(0, currentShares - simShares);
@@ -1460,7 +1400,7 @@
                     saveToFirestore();
                 });
 
-                dom.btnSimSell.addEventListener('click', () => {
+                addListener('btnSimSell', 'click', () => {
                     const currentShares = getNum(dom.etfShares);
                     const simShares = getNum(dom.simShares);
                     dom.etfShares.value = currentShares + simShares;
@@ -1468,7 +1408,7 @@
                     saveToFirestore();
                 });
                 
-                dom.btnSetNavTo10.addEventListener('click', () => {
+                addListener('btnSetNavTo10', 'click', () => {
                     const aumText = dom.etfAUM.textContent;
                     const aum = parseFloat(aumText.replace(/[^0-9.-]+/g,""));
                     if (aum > 0) {
@@ -1480,23 +1420,23 @@
 
 
                 // Accordion Toggles
-                dom.btnEtfHelp.addEventListener('click', () => {
+                addListener('btnEtfHelp', 'click', () => {
                    const help = dom.etfHelp;
                    help.style.display = help.style.display === 'block' ? 'none' : 'block';
                 });
-                dom.btnSafetyHelp.addEventListener('click', (e) => {
+                addListener('btnSafetyHelp', 'click', (e) => {
                    const help = dom.safetyHelp;
                    const isHidden = help.style.display === 'none' || help.style.display === '';
                    help.style.display = isHidden ? 'block' : 'none';
                    e.target.textContent = isHidden ? 'Hide Details' : 'Show Details';
                 });
-                 dom.btnRebalanceHelp.addEventListener('click', (e) => {
+                 addListener('btnRebalanceHelp', 'click', (e) => {
                    const help = dom.rebalanceHelp;
                    const isHidden = help.style.display === 'none' || help.style.display === '';
                    help.style.display = isHidden ? 'block' : 'none';
                    e.target.textContent = isHidden ? 'Hide Details' : 'Show Details';
                 });
-                dom.btnTaxHelp.addEventListener('click', (e) => {
+                addListener('btnTaxHelp', 'click', (e) => {
                    const help = dom.taxHelp;
                    const isHidden = help.style.display === 'none' || help.style.display === '';
                    help.style.display = isHidden ? 'block' : 'none';
