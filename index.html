@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ i tried to add firebase can you clean this up for me <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1166,8 +1166,15 @@
                     try {
                         const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${apiKey}`;
                         const response = await fetch(url);
-                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                         const data = await response.json();
+
+                        // --- NEW ERROR HANDLING ---
+                        if (data['Note'] || data['Information']) {
+                             alert(`AlphaVantage API Error: ${data['Note'] || data['Information']}\n\nThis usually means the rate limit (25 requests/day) is exceeded.`);
+                             dom.btnFetchPrices.disabled = false;
+                             dom.btnFetchPrices.textContent = '⚡ Fetch Live Prices';
+                             return; // Stop fetching
+                        }
 
                         const price = data?.['Global Quote']?.['05. price'];
 
@@ -1175,6 +1182,7 @@
                             row.querySelector('.price').value = parseFloat(price).toFixed(2);
                             row.style.backgroundColor = 'rgba(40, 167, 69, 0.3)';
                         } else {
+                             // Try to detect SGOV issue or other missing data
                             console.warn(`No price data for ${ticker}. API response:`, data);
                             row.style.backgroundColor = 'rgba(220, 53, 69, 0.3)';
                         }
