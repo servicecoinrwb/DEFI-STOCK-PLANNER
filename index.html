@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DeFi to Dividends Planner</title>
-    <!-- Fix for favicon 404 error -->
-    <link rel="icon" href="data:,">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -220,26 +218,63 @@
             position: relative;
             height: 220px;
         }
-        
-        /* Sync Status */
-        #syncStatus {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-left: 12px;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        #syncStatus.saving { color: var(--accent-primary); }
-        #syncStatus.saved { color: var(--accent-positive); }
-        #syncStatus.error { color: var(--accent-negative); }
 
+        /* Auth UI */
+        #auth-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-tertiary);
+            padding: 4px 12px 4px 4px;
+            border-radius: 99px;
+            border: 1px solid var(--border-color);
+        }
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+        }
+        .user-name {
+            font-size: 13px;
+            font-weight: 500;
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--text-muted);
+            transition: background-color 0.3s;
+        }
+        .status-dot.active { background-color: var(--accent-positive); box-shadow: 0 0 5px var(--accent-positive); }
+        .status-dot.loading { background-color: #ffc107; animation: pulse 1s infinite; }
+        
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
     </style>
 </head>
 <body>
 
     <div class="row" style="justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap: wrap;">
         <h1 style="margin-bottom:0;">DeFi to Dividends Planner</h1>
-        <div class="row">
-            <a href="https://debank.com/profile/0x4386a86277a03ff37188416767ad74e4381b226c" target="_blank" class="btn ghost">View DeBank Profile ↗</a>
+        
+        <!-- Auth Header -->
+        <div id="auth-container">
+            <div id="status-indicator" class="status-dot" title="Sync Status"></div>
+            <div id="user-display" class="user-profile" style="display:none;">
+                <img id="user-img" class="user-avatar" src="" alt="Profile">
+                <span id="user-name" class="user-name">User</span>
+            </div>
+            <button id="btn-login" class="btn">Sign in with Google</button>
+            <button id="btn-logout" class="btn ghost" style="display:none;">Sign Out</button>
         </div>
     </div>
 
@@ -325,7 +360,7 @@
         <div class="hr"></div>
         <h3 class="title" style="font-size:18px">ETF Wizard — Quick Tutorial</h3>
         <p class="note">Simulate your own ETF built from your plan. This is just for fun, not a real security.</p>
-        <ol style="margin:0 0 10px 18px; padding:0; color: var(--text-secondary); line-height: 1.6;">
+        <ol>
           <li><b>Name it:</b> Pick a fun <span class="kbd">Ticker</span> and <span class="kbd">Name</span>.</li>
           <li><b>Choose a baseline:</b> Set <span class="kbd">Start NAV</span> (e.g., $10.00) and <span class="kbd">Shares Outstanding</span>.</li>
           <li><b>We compute NAV:</b> <i>Live NAV</i> = (<b>Stake USD</b> + <b>Annual stock contributions</b>) ÷ <b>Shares</b>.</li>
@@ -513,7 +548,7 @@
 
       <div class="card">
         <h2 class="title">2) How It Works</h2>
-        <ol style="margin:0 0 8px 18px; padding:0; color: var(--text-secondary); line-height: 1.6;">
+        <ol>
           <li>Claim GRAIL rewards → swap to USDC on Arbitrum.</li>
           <li>Bridge and withdraw to your bank (batched weekly to reduce fees).</li>
           <li>Fund your broker with DeFi rewards + weekly cash contributions.</li>
@@ -526,6 +561,7 @@
           <button class="btn" id="btnCalc">⚙️ Recalculate</button>
           <button class="btn" id="btnCSV">⬇️ Export Allocation CSV</button>
           <a href="https://robinhood.com/account/investing" target="_blank" class="btn ghost">Go to Broker ↗</a>
+          <a href="https://debank.com/profile/0x4386a86277a03ff37188416767ad74e4381b226c" target="_blank" class="btn ghost">Go to DeBank ↗</a>
         </div>
       </div>
     </section>
@@ -549,7 +585,7 @@
 
             <h4>2. Add a Short-Term Treasury ETF (5–10%) to Your Portfolio</h4>
             <p><strong>Purpose:</strong> Acts as a TradFi “cash proxy” and yield stabilizer. When equities or DeFi are volatile, this holds steady and still pays interest (~5% annually).</p>
-            <table style="max-width: 600px;">
+            <table>
                 <thead><tr><th>ETF</th><th>Yield</th><th>Duration</th><th>Risk</th><th>Use</th></tr></thead>
                 <tbody>
                     <tr><td>SGOV (iShares 0-3 Month Treasury ETF)</td><td>≈ 5.3 %</td><td>~0.1 yr</td><td>Extremely low</td><td>Best pure safety cash park</td></tr>
@@ -561,7 +597,7 @@
             <h4>3. Bridge-Fee Threshold Automation</h4>
              <p><strong>Purpose:</strong> Avoid wasting small harvests on Arbitrum → bank bridge fees.</p>
              <p><strong>Guideline:</strong> Wait until your on-chain USDC balance ≥ $100 before bridging to your brokerage or CEX. You can still log the amount in your planner for tracking, even if it stays on-chain that week.</p>
-             <table style="max-width: 400px;">
+             <table>
                 <thead><tr><th>Harvest</th><th>After-Fee Net</th><th>Action</th></tr></thead>
                 <tbody>
                     <tr><td>$80</td><td>$74</td><td>Hold in buffer</td></tr>
@@ -618,7 +654,7 @@
     </section>
     
     <!-- Tax Prep Sheet Card -->
-     <section class="card" style="margin-top:16px">
+      <section class="card" style="margin-top:16px">
         <div class="row" style="justify-content:space-between; align-items:flex-start;">
             <h2 class="title">📗 Tax Prep Sheet & Checklist</h2>
             <button class="btn ghost" id="btnTaxHelp">Show Details</button>
@@ -638,14 +674,14 @@
                  <li>USD value at the time of the transaction (this determines income/cost basis).</li>
                  <li>Fees paid in crypto.</li>
              </ul>
-              <p>🟢 <strong>Tip:</strong> The total USD value of claimed rewards + interest earned (like from Dolomite) generally counts as taxable income for the year.</p>
+             <p>🟢 <strong>Tip:</strong> The total USD value of claimed rewards + interest earned (like from Dolomite) generally counts as taxable income for the year.</p>
 
              <h4>SHEET 2 – Stock Dividend Summary</h4>
-              <p><strong>Purpose:</strong> Understand your dividend income stream and verify against official documents.</p>
-              <p><strong>Source Document:</strong> Your broker (e.g., Robinhood) will issue a **Form 1099-DIV** early each year summarizing all dividend income (Ordinary vs. Qualified).</p>
-              <p><strong>Planner Use:</strong> The "Est. dividends in year 1" figure in the summary card provides a preview. Use your 1099-DIV for actual tax filing.</p>
-              <p>🟢 <strong>Tip:</strong> Reinvested dividends (DRIP) are still taxable in the year they are received. Your broker tracks the adjusted cost basis automatically.</p>
-              
+             <p><strong>Purpose:</strong> Understand your dividend income stream and verify against official documents.</p>
+             <p><strong>Source Document:</strong> Your broker (e.g., Robinhood) will issue a **Form 1099-DIV** early each year summarizing all dividend income (Ordinary vs. Qualified).</p>
+             <p><strong>Planner Use:</strong> The "Est. dividends in year 1" figure in the summary card provides a preview. Use your 1099-DIV for actual tax filing.</p>
+             <p>🟢 <strong>Tip:</strong> Reinvested dividends (DRIP) are still taxable in the year they are received. Your broker tracks the adjusted cost basis automatically.</p>
+             
              <h4>SHEET 3 – Combined Summary (Planner Data)</h4>
              <p>Use these figures from your planner as a high-level overview for your accountant:</p>
              <ul>
@@ -688,37 +724,19 @@
       <div class="note" style="margin-top:6px">Shares are calculated using each row's <b>Price</b> field below. If price is blank, we'll still track the dollars.</div>
     </section>
 
-    <!-- NEW: Transaction History -->
-    <section class="card" style="margin-top:16px">
-        <h2 class="title">📜 Deposit History</h2>
-        <div class="table-container" style="max-height: 200px; overflow-y: auto;">
-            <table id="historyTable">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Amount</th>
-                        <th>Type</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="historyBody">
-                    <!-- History rows will appear here -->
-                </tbody>
-            </table>
-        </div>
-    </section>
-
     <section class="card" style="margin-top:16px">
       <h2 class="title">3) Portfolio Allocation</h2>
       <div class="note">Edit tickers, names, % allocations, and an optional current price to estimate shares on deposits. Totals should equal 100%.</div>
       <div class="hr"></div>
       <div class="row" style="justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
         <div class="badge">Total allocation: <b id="totalPct">100%</b></div>
-        <div class="row" style="gap:8px">
-          <div class="small muted">Quick Split — enter a single amount to break down by your % allocation</div>
-          <input class="input" id="lump" type="number" min="0" step="0.01" value="200" style="width:160px" />
-          <button class="btn" id="btnLumpCSV">⬇️ Export Lump Split</button>
-          <button class="btn" id="btnFetchPrices">⚡ Fetch Live Prices</button>
+        <div class="row" style="gap:8px; align-items:flex-end;">
+            <div>
+                <label class="small muted">Quick Split ($)</label>
+                <input class="input" id="lump" type="number" min="0" step="0.01" value="200" style="width:160px" />
+            </div>
+          <button class="btn" id="btnApplyLumpSplit">Apply Split</button>
+          <button class="btn ghost" id="btnLumpCSV">⬇️ Export Split</button>
           <button class="btn" id="btnAdd">＋ Add Row</button>
         </div>
       </div>
@@ -728,6 +746,7 @@
         <div style="width: 220px;">
             <input class="input" id="apiKey" type="password" placeholder="Enter API Key" value="KSWYMZVUOXTZH0BT">
         </div>
+        <button class="btn" id="btnFetchPrices">⚡ Fetch Live Prices</button>
       </div>
 
       <div class="table-container">
@@ -770,777 +789,794 @@
     </section>
 
     <footer class="row" style="justify-content:space-between;margin:22px 0 40px; padding: 0 10px;">
-        <div class="row">
-          <div class="muted small">Local storage only — your data stays in your browser.</div>
-          <div id="syncStatus" style="margin-left:12px;"></div>
-        </div>
+      <div class="muted small">Data syncs to cloud when logged in.</div>
       <div class="row"><span class="badge">Built for daily DeFi → dividend equity</span></div>
     </footer>
 
+    <!-- Firebase Configuration & Application Logic -->
     <script type="module">
-        // --- FIREBASE CONFIGURATION ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Use environment variable config if available (for Preview), else fallback to provided config
-        let firebaseConfig;
-        if (typeof __firebase_config !== 'undefined') {
-             firebaseConfig = JSON.parse(__firebase_config);
-        } else {
-             firebaseConfig = {
-              apiKey: "AIzaSyB3NsS90rPdXFu3HpQ1M1LEncnCrXUonUA",
-              authDomain: "defi-stock-planner.firebaseapp.com",
-              projectId: "defi-stock-planner",
-              storageBucket: "defi-stock-planner.firebasestorage.app",
-              messagingSenderId: "456488490834",
-              appId: "1:456488490834:web:3d7bf7eaa30b655fd8cc8b",
-              measurementId: "G-9PK6XTFTSP"
-            };
-        }
+        // --- FIREBASE CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3NsS90rPdXFu3HpQ1M1LEncnCrXUonUA",
+            authDomain: "defi-stock-planner.firebaseapp.com",
+            projectId: "defi-stock-planner",
+            storageBucket: "defi-stock-planner.firebasestorage.app",
+            messagingSenderId: "456488490834",
+            appId: "1:456488490834:web:3d7bf7eaa30b655fd8cc8b",
+            measurementId: "G-9PK6XTFTSP"
+        };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; // Environment variable for App ID
+        const provider = new GoogleAuthProvider();
+
+        // --- DOM ELEMENTS ---
+        const dom = {};
+        const ids = [
+            'sumDaily', 'sumDefiYear', 'sumToStocksYear', 'sumDivYear', 'sumCombinedYear', 'sumBlendedYield', 
+            'broBalance', 'broInterestRate', 'broInterestInclude', 'broInclude',
+            'etfTicker', 'etfName', 'etfStartNav', 'etfShares', 'etfNav', 'etfAUM', 'etfChange', 'btnEtfHelp', 'etfHelp',
+            'simShares', 'btnSimBuy', 'btnSimSell', 'btnSetNavTo10',
+            'xgUse', 'xgAmount', 'xgPrice', 'xgMethod', 'xgAPY', 'xgUsdValue', 'xgPerEpoch', 'xgEpochDays', 'xgFee', 'xgDaily',
+            'xgAPYWrap', 'xgUSDWrap', 'xgEpochWrap', 'grailCoingeckoId', 'btnFetchGrailPrice',
+            'dolomiteBalance', 'dolomiteApy', 'mortgageRate', 'mortgagePrincipal', 'dolomiteInclude', 'dolomiteYield', 'dolomiteMonthlyYield', 'dolomiteEquity',
+            'daily', 'cadence', 'fees', 'pctStocks', 'pctDefi', 'years', 'growth', 'yield', 'drip', 'weeklyCash',
+            'perHarvest', 'perWeek', 'perMonth', 'btnCalc', 'btnCSV',
+            'btnSafetyHelp', 'safetyHelp',
+            'btnRebalanceHelp', 'rebalanceHelp',
+            'btnTaxHelp', 'taxHelp',
+            'depAmount', 'depQuick', 'depDate', 'btnLogDeposit', 'btnClearDeposits',
+            'totalPct', 'lump', 'btnLumpCSV', 'btnApplyLumpSplit', 'btnAdd', 'tbody', 'btnFetchPrices', 'apiKey',
+            'btn-login', 'btn-logout', 'user-display', 'user-img', 'user-name', 'status-indicator'
+        ];
+        ids.forEach(id => dom[id] = document.getElementById(id));
+
+        // --- GLOBAL STATE ---
+        let valueChart, divChart;
+        let currentUser = null;
+        let unsubscribeDoc = null; // Listener for Firestore
+        const STORE_KEY = 'defiDividendPlannerState';
         
-        // --- APP LOGIC ---
-        document.addEventListener('DOMContentLoaded', () => {
-             // --- DOM ELEMENT SELECTORS ---
-            const ids = [
-                'sumDaily', 'sumDefiYear', 'sumToStocksYear', 'sumDivYear', 'sumCombinedYear', 'sumBlendedYield', 
-                'broBalance', 'broInterestRate', 'broInterestInclude', 'broInclude',
-                'etfTicker', 'etfName', 'etfStartNav', 'etfShares', 'etfNav', 'etfAUM', 'etfChange', 'btnEtfHelp', 'etfHelp',
-                'simShares', 'btnSimBuy', 'btnSimSell', 'btnSetNavTo10',
-                'xgUse', 'xgAmount', 'xgPrice', 'xgMethod', 'xgAPY', 'xgUsdValue', 'xgPerEpoch', 'xgEpochDays', 'xgFee', 'xgDaily',
-                'xgAPYWrap', 'xgUSDWrap', 'xgEpochWrap', 'grailCoingeckoId', 'btnFetchGrailPrice',
-                'dolomiteBalance', 'dolomiteApy', 'mortgageRate', 'mortgagePrincipal', 'dolomiteInclude', 'dolomiteYield', 'dolomiteMonthlyYield', 'dolomiteEquity',
-                'daily', 'cadence', 'fees', 'pctStocks', 'pctDefi', 'years', 'growth', 'yield', 'drip', 'weeklyCash',
-                'perHarvest', 'perWeek', 'perMonth', 'btnCalc', 'btnCSV',
-                'btnSafetyHelp', 'safetyHelp',
-                'btnRebalanceHelp', 'rebalanceHelp',
-                'btnTaxHelp', 'taxHelp',
-                'depAmount', 'depQuick', 'depDate', 'btnLogDeposit', 'btnClearDeposits',
-                'totalPct', 'lump', 'btnLumpCSV', 'btnApplyLumpSplit', 'btnAdd', 'tbody', 'btnFetchPrices', 'apiKey', 'syncStatus',
-                'historyBody'
-            ];
-            const dom = {};
-            ids.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) dom[id] = el;
+        const defaultAllocations = [
+            { ticker: 'DTE', name: 'DTE Energy Co.', pct: 16.0, yield: 3.4, price: 141.13, invested: 141.13, shares: 1.00 },
+            { ticker: 'SCHD', name: 'Schwab US Dividend ETF', pct: 16.0, yield: 3.5, price: 26.62, invested: 140.01, shares: 5.26 },
+            { ticker: 'AWK', name: 'American Water Works', pct: 16.0, yield: 2.2, price: 140.77, invested: 142.18, shares: 1.01 },
+            { ticker: 'ENB', name: 'Enbridge Inc.', pct: 16.0, yield: 7.6, price: 47.70, invested: 139.76, shares: 2.93 },
+            { ticker: 'NEE', name: 'NextEra Energy', pct: 16.0, yield: 3.0, price: 84.26, invested: 140.71, shares: 1.67 },
+            { ticker: 'EXC', name: 'Exelon Corp.', pct: 16.0, yield: 3.8, price: 46.64, invested: 139.44, shares: 2.99 },
+            { ticker: 'SGOV', name: 'iShares 0-3 Month Treasury ETF', pct: 4.0, yield: 5.3, price: 100.00, invested: 0, shares: 0 },
+        ];
+
+        // --- HELPERS ---
+        const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+        const formatNumber = (val, digits = 2) => new Intl.NumberFormat('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(val);
+        const getNum = (el) => parseFloat(el.value) || 0;
+        const debounce = (func, delay) => {
+            let timeoutId;
+            return (...args) => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => {
+                    func.apply(this, args);
+                }, delay);
+            };
+        };
+
+        // --- AUTH UI LOGIC ---
+        function updateAuthUI(user) {
+            if (user) {
+                dom['btn-login'].style.display = 'none';
+                dom['btn-logout'].style.display = 'inline-block';
+                dom['user-display'].style.display = 'flex';
+                dom['user-name'].textContent = user.displayName || 'User';
+                dom['user-img'].src = user.photoURL || 'https://via.placeholder.com/28';
+                dom['status-indicator'].classList.add('active');
+            } else {
+                dom['btn-login'].style.display = 'inline-block';
+                dom['btn-logout'].style.display = 'none';
+                dom['user-display'].style.display = 'none';
+                dom['status-indicator'].classList.remove('active');
+            }
+        }
+
+        async function handleLogin() {
+            try {
+                // Check if we are in the special preview environment
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    // Standard Google Sign In
+                    await signInWithPopup(auth, provider);
+                }
+            } catch (error) {
+                console.error("Login Failed", error);
+                alert("Login failed. If you are in a preview environment, popups may be blocked. " + error.message);
+            }
+        }
+
+        async function handleLogout() {
+            if (unsubscribeDoc) {
+                unsubscribeDoc();
+                unsubscribeDoc = null;
+            }
+            await signOut(auth);
+            // Re-load local storage state immediately after logout
+            loadState(); 
+        }
+
+        // --- DATA PERSISTENCE (Local + Firestore) ---
+        
+        // 1. GATHER DATA
+        function gatherData() {
+            const allocations = [];
+            dom.tbody.querySelectorAll('tr').forEach(row => {
+                allocations.push({
+                    ticker: row.querySelector('.ticker').value,
+                    name: row.querySelector('.name').value,
+                    pct: parseFloat(row.querySelector('.pct').value) || 0,
+                    yield: parseFloat(row.querySelector('.yield').value) || 0,
+                    price: parseFloat(row.querySelector('.price').value) || 0,
+                    invested: parseFloat(row.querySelector('.cum-invested').value) || 0,
+                    shares: parseFloat(row.querySelector('.cum-shares').value) || 0,
+                });
             });
 
-            let valueChart, divChart;
-            const DEFAULT_DOC_ID = 'planner_data';
-            let currentUser = null;
-            let depositHistory = [];
+            const state = {
+                inputs: {},
+                allocations: allocations,
+            };
 
-             // --- DATA & STATE MANAGEMENT ---
-            const defaultAllocations = [
-                { ticker: 'DTE', name: 'DTE Energy Co.', pct: 16.0, yield: 3.4, price: 141.13, invested: 141.13, shares: 1.00 },
-                { ticker: 'SCHD', name: 'Schwab US Dividend ETF', pct: 16.0, yield: 3.5, price: 26.62, invested: 140.01, shares: 5.26 },
-                { ticker: 'AWK', name: 'American Water Works', pct: 16.0, yield: 2.2, price: 140.77, invested: 142.18, shares: 1.01 },
-                { ticker: 'ENB', name: 'Enbridge Inc.', pct: 16.0, yield: 7.6, price: 47.70, invested: 139.76, shares: 2.93 },
-                { ticker: 'NEE', name: 'NextEra Energy', pct: 16.0, yield: 3.0, price: 84.26, invested: 140.71, shares: 1.67 },
-                { ticker: 'EXC', name: 'Exelon Corp.', pct: 16.0, yield: 3.8, price: 46.64, invested: 139.44, shares: 2.99 },
-                { ticker: 'SGOV', name: 'iShares 0-3 Month Treasury ETF', pct: 4.0, yield: 5.3, price: 100.00, invested: 0, shares: 0 },
-            ];
-            
-             // --- AUTH & FIREBASE LOGIC ---
-            async function initAuthAndSync() {
-                dom.syncStatus.textContent = 'Connecting...';
-                
-                try {
-                     // Check for custom token first (Standard immersive pattern)
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
+            // Save all input fields
+            Object.keys(dom).forEach(key => {
+                const el = dom[key];
+                if (el && typeof el.value !== 'undefined' && key !== 'apiKey') { // Don't sync API Key
+                    if (el.type === 'checkbox') {
+                        state.inputs[key] = el.checked;
                     } else {
-                        await signInAnonymously(auth);
+                        state.inputs[key] = el.value;
                     }
-                } catch (error) {
-                    console.error("Auth error:", error);
-                    dom.syncStatus.textContent = 'Auth Error (Offline Mode)';
-                    renderAllocations(defaultAllocations); // Fallback
-                    return;
                 }
+            });
+            return state;
+        }
 
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        currentUser = user;
-                        dom.syncStatus.textContent = 'Connected';
-                        setupRealtimeListener(user.uid);
-                    } else {
-                        dom.syncStatus.textContent = 'Disconnected';
-                    }
-                });
-            }
+        // 2. APPLY DATA (Restore to UI)
+        function applyDataToUI(state) {
+            if (!state) return;
 
-            function setupRealtimeListener(userId) {
-                // Use 'data' collection to ensure even number of segments
-                const docRef = doc(db, 'artifacts', appId, 'users', userId, 'data', DEFAULT_DOC_ID);
-                
-                onSnapshot(docRef, (docSnap) => {
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        loadStateFromData(data);
-                        calculate(); // Recalc on load
-                        dom.syncStatus.textContent = 'Synced';
-                        dom.syncStatus.className = 'saved';
-                    } else {
-                        // No data yet, save defaults
-                        renderAllocations(defaultAllocations);
-                        saveToFirestore(); 
-                    }
-                }, (error) => {
-                    console.error("Sync error:", error);
-                    dom.syncStatus.textContent = 'Sync Error';
-                    dom.syncStatus.className = 'error';
-                });
-            }
-
-            const saveToFirestore = debounce(async () => {
-                if (!currentUser) return;
-                
-                dom.syncStatus.textContent = 'Saving...';
-                dom.syncStatus.className = 'saving';
-
-                const allocations = [];
-                dom.tbody.querySelectorAll('tr').forEach(row => {
-                    allocations.push({
-                        ticker: row.querySelector('.ticker').value,
-                        name: row.querySelector('.name').value,
-                        pct: parseFloat(row.querySelector('.pct').value) || 0,
-                        yield: parseFloat(row.querySelector('.yield').value) || 0,
-                        price: parseFloat(row.querySelector('.price').value) || 0,
-                        invested: parseFloat(row.querySelector('.cum-invested').value) || 0,
-                        shares: parseFloat(row.querySelector('.cum-shares').value) || 0,
-                    });
-                });
-
-                const state = {
-                    inputs: {},
-                    allocations: allocations,
-                    history: depositHistory, // Save history
-                    timestamp: new Date().toISOString()
-                };
-
-                 // Save all input fields
-                Object.keys(dom).forEach(key => {
-                    const el = dom[key];
-                    // Skip buttons, containers, non-input elements
-                    if (el && (el.tagName === 'INPUT' || el.tagName === 'SELECT')) {
-                        if (el.type === 'checkbox') {
-                            state.inputs[key] = el.checked;
+            // Load input fields
+            if (state.inputs) {
+                Object.keys(state.inputs).forEach(key => {
+                    if (dom[key]) {
+                        if (dom[key].type === 'checkbox') {
+                            dom[key].checked = state.inputs[key];
                         } else {
-                            state.inputs[key] = el.value;
+                            dom[key].value = state.inputs[key];
                         }
                     }
                 });
+            }
+            
+            // Render Table
+            renderAllocations(state.allocations || defaultAllocations);
+            
+            // Recalculate everything with new data
+            calculate();
+        }
 
+        // 3. SAVE STATE (Router)
+        const saveState = debounce(async () => {
+            const data = gatherData();
+            
+            // Always save to local storage as backup/cache
+            localStorage.setItem(STORE_KEY, JSON.stringify(data));
+
+            // If user is logged in, save to Firestore
+            if (currentUser) {
+                dom['status-indicator'].classList.add('loading');
                 try {
-                     const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'data', DEFAULT_DOC_ID);
-                     await setDoc(docRef, state);
-                     dom.syncStatus.textContent = 'Saved to Cloud';
-                     dom.syncStatus.className = 'saved';
+                    // Following the mandatory rule for artifacts path: artifacts/{appId}/users/{userId}/data
+                    // The App ID for this specific code snippet provided is 'defi-stock-planner' based on project ID
+                    // But generally we use the project ID or a fixed string
+                    const userDocRef = doc(db, 'artifacts', 'defi-stock-planner', 'users', currentUser.uid, 'data', 'planner_config');
+                    await setDoc(userDocRef, data, { merge: true });
                 } catch (e) {
-                    console.error("Save error:", e);
-                    dom.syncStatus.textContent = 'Save Failed';
-                    dom.syncStatus.className = 'error';
+                    console.error("Error saving to cloud", e);
+                } finally {
+                    dom['status-indicator'].classList.remove('loading');
                 }
-            }, 2000); // Debounce save every 2 seconds
+            }
+        }, 1000); // 1 second debounce
 
-            function loadStateFromData(data) {
-                if (!data) return;
-
-                // Load inputs
-                if (data.inputs) {
-                    Object.keys(data.inputs).forEach(key => {
-                        if (dom[key]) {
-                            if (dom[key].type === 'checkbox') {
-                                dom[key].checked = data.inputs[key];
-                            } else {
-                                dom[key].value = data.inputs[key];
-                            }
-                        }
-                    });
+        // 4. LOAD STATE (Router)
+        function loadState() {
+            // Default: Load from Local Storage
+            const local = JSON.parse(localStorage.getItem(STORE_KEY));
+            if (local) {
+                applyDataToUI(local);
+            } else {
+                renderAllocations(defaultAllocations);
+                calculate();
+            }
+        }
+        
+        // 5. SETUP FIRESTORE LISTENER
+        function setupRealtimeListener(user) {
+            const userDocRef = doc(db, 'artifacts', 'defi-stock-planner', 'users', user.uid, 'data', 'planner_config');
+            
+            unsubscribeDoc = onSnapshot(userDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const cloudData = docSnap.data();
+                    console.log("Cloud data received");
+                    // Only apply if different? For now, just apply.
+                    // Note: This might conflict if typing fast, but our save is debounced.
+                    // ideally we check timestamps, but for this scope, simple sync is okay.
+                    
+                    // We avoid re-applying if the user is actively typing (handled via debounce somewhat),
+                    // but receiving an update from another device should overwrite.
+                    applyDataToUI(cloudData);
+                } else {
+                    console.log("No cloud data yet for this user.");
+                    // Optional: Upload local data to cloud if it's their first login?
+                    saveState(); 
                 }
-                
-                // Load allocations
-                renderAllocations(data.allocations || defaultAllocations);
+            }, (error) => {
+                console.error("Firestore Error:", error);
+            });
+        }
 
-                // Load history
-                depositHistory = data.history || [];
-                renderHistory();
-            }
 
+        // --- ALLOCATION TABLE LOGIC ---
+        function renderAllocations(allocations) {
+            dom.tbody.innerHTML = '';
+            allocations.forEach(alloc => addRow(alloc));
+            updateTotalPct();
+        }
+        
+        function addRow(data = {}) {
+            const tr = document.createElement('tr');
+            const { ticker = '', name = '', pct = 0, yield: rowYield = 0, price = 0, invested = 0, shares = 0 } = data;
             
-            // --- HELPER FUNCTIONS ---
-            function formatCurrency(val) { return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val); }
-            function formatNumber(val, digits = 2) { return new Intl.NumberFormat('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(val); }
-            function getNum(el) { return parseFloat(el?.value) || 0; }
-            
-            // Debounce implementation
-            function debounce(func, delay) {
-                let timeoutId;
-                return (...args) => {
-                    clearTimeout(timeoutId);
-                    timeoutId = setTimeout(() => {
-                        func.apply(this, args);
-                    }, delay);
-                };
-            }
-            
-            // Safely add event listener
-            function addListener(id, event, handler) {
-                const el = dom[id];
-                if (el) {
-                    el.addEventListener(event, handler);
-                } 
-            }
+            tr.innerHTML = `
+                <td><input type="text" class="input ticker" value="${ticker.toUpperCase()}"></td>
+                <td><input type="text" class="input name" value="${name}"></td>
+                <td><input type="number" class="input right pct" value="${pct}" step="0.1" min="0" max="100"></td>
+                <td><input type="number" class="input right yield" value="${rowYield}" step="0.1" min="0"></td>
+                <td><input type="number" class="input right price" value="${price}" step="0.01" min="0"></td>
+                <td class="right mono lump-split">$0.00</td>
+                <td class="right mono weekly-split">$0.00</td>
+                <td class="right mono monthly-split">$0.00</td>
+                <td><input type="number" class="input right cum-invested" value="${invested.toFixed(2)}" step="0.01" min="0"></td>
+                <td><input type="number" class="input right cum-shares" value="${shares.toFixed(4)}" step="0.0001" min="0"></td>
+                <td class="right mono avg-cost">$0.00</td>
+                <td><button class="btn-delete">×</button></td>
+            `;
+            dom.tbody.appendChild(tr);
 
-
-            // --- ALLOCATION TABLE LOGIC ---
-            function renderAllocations(allocations) {
-                dom.tbody.innerHTML = '';
-                allocations.forEach(alloc => addRow(alloc));
-                updateTotalPct();
-            }
-            
-            function addRow(data = {}) {
-                const tr = document.createElement('tr');
-                const { ticker = '', name = '', pct = 0, yield: rowYield = 0, price = 0, invested = 0, shares = 0 } = data;
-                
-                tr.innerHTML = `
-                    <td><input type="text" class="input ticker" value="${ticker.toUpperCase()}"></td>
-                    <td><input type="text" class="input name" value="${name}"></td>
-                    <td><input type="number" class="input right pct" value="${pct}" step="0.1" min="0" max="100"></td>
-                    <td><input type="number" class="input right yield" value="${rowYield}" step="0.1" min="0"></td>
-                    <td><input type="number" class="input right price" value="${price}" step="0.01" min="0"></td>
-                    <td class="right mono lump-split">$0.00</td>
-                    <td class="right mono weekly-split">$0.00</td>
-                    <td class="right mono monthly-split">$0.00</td>
-                    <td><input type="number" class="input right cum-invested" value="${invested.toFixed(2)}" step="0.01" min="0"></td>
-                    <td><input type="number" class="input right cum-shares" value="${shares.toFixed(4)}" step="0.0001" min="0"></td>
-                    <td class="right mono avg-cost">$0.00</td>
-                    <td><button class="btn-delete">×</button></td>
-                `;
-                dom.tbody.appendChild(tr);
-
-                const debouncedCalculate = debounce(() => {
-                    calculate();
-                    saveToFirestore();
-                }, 500);
-
-                tr.querySelector('.btn-delete').addEventListener('click', () => {
-                    tr.remove();
-                    debouncedCalculate();
+            tr.querySelector('.btn-delete').addEventListener('click', () => {
+                tr.remove();
+                calculate();
+                saveState();
+            });
+            tr.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', () => {
+                    if (input.classList.contains('cum-invested') || input.classList.contains('cum-shares')) {
+                       updateAvgCost(tr);
+                    }
+                    calculate(); // Immediate update for math
+                    saveState(); // Debounced save to db
                 });
-                tr.querySelectorAll('input').forEach(input => {
-                    input.addEventListener('input', () => {
-                        if (input.classList.contains('cum-invested') || input.classList.contains('cum-shares')) {
-                           updateAvgCost(tr);
-                        }
-                        debouncedCalculate();
-                    });
-                });
-                updateAvgCost(tr);
-            }
+            });
+            updateAvgCost(tr);
+        }
 
-            function updateTotalPct() {
-                let total = 0;
-                dom.tbody.querySelectorAll('.pct').forEach(input => total += getNum(input));
-                dom.totalPct.textContent = `${formatNumber(total, 1)}%`;
-                dom.totalPct.classList.toggle('warning', total.toFixed(1) != 100.0);
-                dom.totalPct.classList.toggle('up', total.toFixed(1) == 100.0);
-            }
+        function updateTotalPct() {
+            let total = 0;
+            dom.tbody.querySelectorAll('.pct').forEach(input => total += getNum(input));
+            dom.totalPct.textContent = `${formatNumber(total, 1)}%`;
+            dom.totalPct.classList.toggle('warning', total.toFixed(1) != 100.0);
+            dom.totalPct.classList.toggle('up', total.toFixed(1) == 100.0);
+        }
 
-            function updateAvgCost(row) {
-                const invested = parseFloat(row.querySelector('.cum-invested').value) || 0;
-                const shares = parseFloat(row.querySelector('.cum-shares').value) || 0;
-                row.querySelector('.avg-cost').textContent = formatCurrency(shares > 0 ? invested / shares : 0);
-            }
+        function updateAvgCost(row) {
+            const invested = parseFloat(row.querySelector('.cum-invested').value) || 0;
+            const shares = parseFloat(row.querySelector('.cum-shares').value) || 0;
+            row.querySelector('.avg-cost').textContent = formatCurrency(shares > 0 ? invested / shares : 0);
+        }
 
-            // --- HISTORY LOGIC ---
-            function renderHistory() {
-                dom.historyBody.innerHTML = '';
-                // Sort by date desc
-                const sorted = [...depositHistory].sort((a, b) => new Date(b.date) - new Date(a.date));
+        // --- DEPOSIT LOGIC ---
+        function logDeposit() {
+            const amount = getNum(dom.depAmount);
+            if (amount <= 0) return;
+
+            dom.tbody.querySelectorAll('tr').forEach(row => {
+                const pct = (parseFloat(row.querySelector('.pct').value) || 0) / 100;
+                const price = parseFloat(row.querySelector('.price').value) || 0;
                 
-                sorted.forEach((entry, index) => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${entry.date}</td>
-                        <td>${formatCurrency(entry.amount)}</td>
-                        <td>${entry.type}</td>
-                        <td><button class="btn-delete" data-index="${index}" title="Delete Log">×</button></td>
-                    `;
-                    // Add delete listener
-                    tr.querySelector('.btn-delete').addEventListener('click', () => {
-                         if(confirm("Delete this history entry? (Note: This only removes the log, it does NOT subtract from your totals)")) {
-                             depositHistory.splice(index, 1); // Remove from array
-                             renderHistory(); // Re-render
-                             saveToFirestore(); // Save
-                         }
-                    });
-                    dom.historyBody.appendChild(tr);
-                });
-            }
+                const depositForTicker = amount * pct;
+                const sharesBought = price > 0 ? depositForTicker / price : 0;
+                
+                const investedInput = row.querySelector('.cum-invested');
+                const sharesInput = row.querySelector('.cum-shares');
 
-            // --- DEPOSIT LOGIC ---
-            function logDeposit() {
-                const amount = getNum(dom.depAmount);
-                if (amount <= 0) return;
+                const currentInvested = parseFloat(investedInput.value) || 0;
+                const currentShares = parseFloat(sharesInput.value) || 0;
 
-                // 1. Update Totals
-                dom.tbody.querySelectorAll('tr').forEach(row => {
-                    const pct = (parseFloat(row.querySelector('.pct').value) || 0) / 100;
-                    const price = parseFloat(row.querySelector('.price').value) || 0;
-                    
-                    const depositForTicker = amount * pct;
-                    const sharesBought = price > 0 ? depositForTicker / price : 0;
-                    
-                    const investedInput = row.querySelector('.cum-invested');
-                    const sharesInput = row.querySelector('.cum-shares');
-
-                    const currentInvested = parseFloat(investedInput.value) || 0;
-                    const currentShares = parseFloat(sharesInput.value) || 0;
-
-                    investedInput.value = (currentInvested + depositForTicker).toFixed(2);
-                    sharesInput.value = (currentShares + sharesBought).toFixed(4);
-                    
+                investedInput.value = (currentInvested + depositForTicker).toFixed(2);
+                sharesInput.value = (currentShares + sharesBought).toFixed(4);
+                
+                updateAvgCost(row);
+            });
+            
+            dom.depAmount.value = '';
+            calculate();
+            saveState();
+        }
+        
+        function clearDeposits() {
+            if (window.confirm('Are you sure you want to clear all cumulative deposit data? This cannot be undone.')) {
+                  dom.tbody.querySelectorAll('tr').forEach(row => {
+                    row.querySelector('.cum-invested').value = '0.00';
+                    row.querySelector('.cum-shares').value = '0.0000';
                     updateAvgCost(row);
                 });
-                
-                // 2. Log to History
-                const typeMap = {
-                    '': 'Manual',
-                    'week': 'Weekly',
-                    'month': 'Monthly',
-                    'harvest': 'DeFi Harvest'
-                };
-                
-                const newEntry = {
-                    date: dom.depDate.value || new Date().toISOString().split('T')[0],
-                    amount: amount,
-                    type: typeMap[dom.depQuick.value] || 'Manual'
-                };
-                
-                depositHistory.push(newEntry);
-                renderHistory();
-
-                dom.depAmount.value = '';
                 calculate();
-                saveToFirestore();
+                saveState();
             }
-            
-            function clearDeposits() {
-                if (window.confirm('Are you sure you want to clear all cumulative deposit data? This cannot be undone.')) {
-                     dom.tbody.querySelectorAll('tr').forEach(row => {
-                        row.querySelector('.cum-invested').value = '0.00';
-                        row.querySelector('.cum-shares').value = '0.0000';
-                        updateAvgCost(row);
-                    });
-                    calculate();
-                    saveToFirestore();
+        }
+        
+        function handleQuickDeposit() {
+            const val = dom.depQuick.value;
+            if (val === 'week') dom.depAmount.value = dom.perWeek.dataset.raw || 0;
+            else if (val === 'month') dom.depAmount.value = dom.perMonth.dataset.raw || 0;
+            else if (val === 'harvest') dom.depAmount.value = dom.perHarvest.dataset.raw || 0;
+        }
+        
+        // --- QUICK SPLIT ---
+        function applyLumpSplit() {
+            const lump = getNum(dom.lump);
+            dom.tbody.querySelectorAll('tr').forEach(row => {
+                const pct = (parseFloat(row.querySelector('.pct').value) || 0) / 100;
+                row.querySelector('.lump-split').textContent = formatCurrency(lump * pct);
+            });
+        }
+
+        // --- CSV EXPORT ---
+        function exportCSV(isLump) {
+            let csv = 'Ticker,Name,% Allocation,' + (isLump ? 'Lump Amount ($)\n' : 'Weekly Amount ($),Monthly Amount ($)\n');
+            dom.tbody.querySelectorAll('tr').forEach(row => {
+                const ticker = row.querySelector('.ticker').value;
+                const name = row.querySelector('.name').value;
+                const pct = row.querySelector('.pct').value;
+                if (isLump) {
+                    const lump = row.querySelector('.lump-split').textContent;
+                    csv += `${ticker},"${name}",${pct},${lump.replace('$', '')}\n`;
+                } else {
+                    const weekly = row.querySelector('.weekly-split').textContent;
+                    const monthly = row.querySelector('.monthly-split').textContent;
+                    csv += `${ticker},"${name}",${pct},${weekly.replace('$', '')},${monthly.replace('$', '')}\n`;
                 }
-            }
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `${isLump ? 'lump_sum_split' : 'allocation'}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // --- PRICE APIS ---
+        async function fetchGrailPrice() {
+            const coingeckoId = dom.grailCoingeckoId.value.trim().toLowerCase();
+            if (!coingeckoId) return;
             
-            function handleQuickDeposit() {
-                const val = dom.depQuick.value;
-                if (val === 'week') dom.depAmount.value = dom.perWeek.dataset.raw || 0;
-                else if (val === 'month') dom.depAmount.value = dom.perMonth.dataset.raw || 0;
-                else if (val === 'harvest') dom.depAmount.value = dom.perHarvest.dataset.raw || 0;
+            dom.btnFetchGrailPrice.disabled = true;
+            dom.btnFetchGrailPrice.innerHTML = '...';
+
+            try {
+                const url = `https://api.coingecko.com/api/v3/simple/price?ids=${coingeckoId}&vs_currencies=usd`;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+
+                if (data[coingeckoId] && data[coingeckoId].usd) {
+                    dom.xgPrice.value = data[coingeckoId].usd.toFixed(2);
+                    calculate();
+                    saveState();
+                } else {
+                     console.warn(`No price data for ID "${coingeckoId}"`, data);
+                }
+            } catch (error) {
+                console.error('Error fetching CoinGecko price:', error);
+            } finally {
+                dom.btnFetchGrailPrice.disabled = false;
+                dom.btnFetchGrailPrice.innerHTML = '⚡';
             }
+        }
+
+        async function fetchStockPrices() {
+            dom.btnFetchPrices.disabled = true;
+            dom.btnFetchPrices.textContent = 'Fetching...';
+
+            const apiKey = dom.apiKey.value.trim() || 'demo';
+            const rows = Array.from(dom.tbody.querySelectorAll('tr'));
             
-            // --- QUICK SPLIT ---
-            function applyLumpSplit() {
-                const lump = getNum(dom.lump);
-                dom.tbody.querySelectorAll('tr').forEach(row => {
-                    const pct = (parseFloat(row.querySelector('.pct').value) || 0) / 100;
-                    row.querySelector('.lump-split').textContent = formatCurrency(lump * pct);
-                });
-            }
+            const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-            // --- CSV EXPORT ---
-            function exportCSV(isLump) {
-                let csv = 'Ticker,Name,% Allocation,' + (isLump ? 'Lump Amount ($)\n' : 'Weekly Amount ($),Monthly Amount ($)\n');
-                dom.tbody.querySelectorAll('tr').forEach(row => {
-                    const ticker = row.querySelector('.ticker').value;
-                    const name = row.querySelector('.name').value;
-                    const pct = row.querySelector('.pct').value;
-                    if (isLump) {
-                        const lump = row.querySelector('.lump-split').textContent;
-                        csv += `${ticker},"${name}",${pct},${lump.replace('$', '')}\n`;
-                    } else {
-                        const weekly = row.querySelector('.weekly-split').textContent;
-                        const monthly = row.querySelector('.monthly-split').textContent;
-                        csv += `${ticker},"${name}",${pct},${weekly.replace('$', '')},${monthly.replace('$', '')}\n`;
-                    }
-                });
+            for (const row of rows) {
+                const ticker = row.querySelector('.ticker').value.trim().toUpperCase();
+                if (!ticker) continue;
 
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement("a");
-                const url = URL.createObjectURL(blob);
-                link.setAttribute("href", url);
-                link.setAttribute("download", `${isLump ? 'lump_sum_split' : 'allocation'}.csv`);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
-
-            // --- PRICE APIS ---
-            async function fetchGrailPrice() {
-                const coingeckoId = dom.grailCoingeckoId.value.trim().toLowerCase();
-                if (!coingeckoId) return;
-                
-                dom.btnFetchGrailPrice.disabled = true;
-                dom.btnFetchGrailPrice.innerHTML = '...';
+                row.style.transition = 'background-color 0.3s';
 
                 try {
-                    const url = `https://api.coingecko.com/api/v3/simple/price?ids=${coingeckoId}&vs_currencies=usd`;
+                    const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${apiKey}`;
                     const response = await fetch(url);
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                     const data = await response.json();
 
-                    if (data[coingeckoId] && data[coingeckoId].usd) {
-                        dom.xgPrice.value = data[coingeckoId].usd.toFixed(2);
-                        calculate();
-                        saveToFirestore();
+                    const price = data?.['Global Quote']?.['05. price'];
+
+                    if (price) {
+                        row.querySelector('.price').value = parseFloat(price).toFixed(2);
+                        row.style.backgroundColor = 'rgba(40, 167, 69, 0.3)';
                     } else {
-                         console.warn(`No price data for ID "${coingeckoId}"`, data);
-                    }
-                } catch (error) {
-                    console.error('Error fetching CoinGecko price:', error);
-                } finally {
-                    dom.btnFetchGrailPrice.disabled = false;
-                    dom.btnFetchGrailPrice.innerHTML = '⚡';
-                }
-            }
-
-            // --- NEW SMART FETCH FUNCTION ---
-            async function fetchStockPrices() {
-                dom.btnFetchPrices.disabled = true;
-                const originalText = dom.btnFetchPrices.textContent;
-                dom.btnFetchPrices.textContent = 'Fetching...';
-
-                const apiKey = dom.apiKey.value.trim() || 'demo';
-                const rows = Array.from(dom.tbody.querySelectorAll('tr'));
-                
-                for (let i = 0; i < rows.length; i++) {
-                    const row = rows[i];
-                    const ticker = row.querySelector('.ticker').value.trim().toUpperCase();
-                    if (!ticker) continue;
-
-                    // Visual feedback: Processing
-                    row.style.transition = 'background-color 0.3s';
-                    row.style.backgroundColor = 'rgba(0, 123, 255, 0.2)'; // Blueish tint
-
-                    try {
-                        const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${apiKey}`;
-                        const response = await fetch(url);
-                        const data = await response.json();
-
-                        // --- RATE LIMIT CHECK ---
-                        if (data['Note'] && data['Note'].includes("call frequency")) {
-                            console.warn(`Rate limit hit at ${ticker}. Pausing...`);
-                            row.style.backgroundColor = 'rgba(255, 193, 7, 0.3)'; // Yellow warning
-                            
-                            // Countdown timer
-                            for (let s = 65; s > 0; s--) {
-                                dom.btnFetchPrices.textContent = `Limit Hit. Wait ${s}s...`;
-                                await new Promise(r => setTimeout(r, 1000));
-                            }
-                            
-                            // Reset button text and retry THIS index
-                            dom.btnFetchPrices.textContent = 'Resuming...';
-                            i--; // Go back one step to retry current stock
-                            continue; 
-                        }
-
-                        const price = data?.['Global Quote']?.['05. price'];
-
-                        if (price) {
-                            row.querySelector('.price').value = parseFloat(price).toFixed(2);
-                            row.style.backgroundColor = 'rgba(40, 167, 69, 0.3)'; // Green success
-                        } else {
-                             console.warn(`No data for ${ticker}`, data);
-                             row.style.backgroundColor = 'rgba(220, 53, 69, 0.3)'; // Red error
-                        }
-                    } catch (error) {
-                        console.error(`Error fetching ${ticker}:`, error);
+                        console.warn(`No price data for ${ticker}. API response:`, data);
                         row.style.backgroundColor = 'rgba(220, 53, 69, 0.3)';
                     }
-
-                    // Remove highlight after a bit
-                    setTimeout(() => { row.style.backgroundColor = ''; }, 2000);
-
-                    // Polite delay between calls
-                    await new Promise(r => setTimeout(r, 1500)); 
+                } catch (error) {
+                    console.error(`Could not fetch price for ${ticker}:`, error);
+                    row.style.backgroundColor = 'rgba(220, 53, 69, 0.3)';
                 }
 
-                dom.btnFetchPrices.disabled = false;
-                dom.btnFetchPrices.textContent = originalText;
-                calculate();
-                saveToFirestore();
+                setTimeout(() => {
+                    row.style.backgroundColor = '';
+                }, 1200);
+
+                // AlphaVantage free tier is 25 calls/day, and up to 5/min.
+                await sleep(1000); 
+            }
+
+            dom.btnFetchPrices.disabled = false;
+            dom.btnFetchPrices.textContent = '⚡ Fetch Live Prices';
+            calculate();
+            saveState();
+        }
+
+
+        // --- CORE CALCULATION ENGINE ---
+        function calculate() {
+            // Read all inputs
+            const xgUse = dom.xgUse.checked;
+            const xgAmount = getNum(dom.xgAmount);
+            const xgPrice = getNum(dom.xgPrice);
+            const xgMethod = dom.xgMethod.value;
+            const xgAPY = getNum(dom.xgAPY);
+            const xgPerEpoch = getNum(dom.xgPerEpoch);
+            const xgEpochDays = getNum(dom.xgEpochDays);
+            const xgFee = getNum(dom.xgFee);
+            let xgUsdValue = getNum(dom.xgUsdValue);
+            if (xgPrice > 0) {
+              xgUsdValue = xgAmount * xgPrice;
+              dom.xgUsdValue.value = xgUsdValue.toFixed(2);
+            }
+
+            let dailyDeFi = getNum(dom.daily);
+            let xgDaily = 0;
+            if(xgUse) {
+                if(xgMethod === 'apy') {
+                    xgDaily = (xgUsdValue * (xgAPY / 100)) / 365;
+                } else { // epoch
+                    if (xgEpochDays > 0) {
+                        xgDaily = (xgAmount * xgPerEpoch) / xgEpochDays;
+                    } else {
+                        xgDaily = 0;
+                    }
+                }
+                xgDaily *= (1 - xgFee / 100);
+                dom.xgDaily.textContent = formatCurrency(xgDaily);
+                dom.daily.value = xgDaily.toFixed(2);
+                dailyDeFi = xgDaily;
+            }
+            
+            // Mortgage Offset Calculation
+            const dolomiteBalance = getNum(dom.dolomiteBalance);
+            const dolomiteApy = getNum(dom.dolomiteApy) / 100;
+            const mortgageRate = getNum(dom.mortgageRate) / 100;
+            const annualDolomiteYield = dolomiteBalance * dolomiteApy;
+            dom.dolomiteYield.textContent = formatCurrency(annualDolomiteYield);
+            dom.dolomiteMonthlyYield.textContent = formatCurrency(annualDolomiteYield / 12);
+            const effectiveEquity = mortgageRate > 0 ? annualDolomiteYield / mortgageRate : 0;
+            dom.dolomiteEquity.textContent = formatCurrency(effectiveEquity);
+            
+            if (dom.dolomiteInclude.checked) {
+                dailyDeFi += annualDolomiteYield / 365.25;
+                dom.daily.value = dailyDeFi.toFixed(2);
+            }
+            
+            // Brokerage Interest Calculation
+            const broBalance = getNum(dom.broBalance);
+            const broInterestRate = getNum(dom.broInterestRate) / 100;
+            if (dom.broInterestInclude.checked && broBalance > 0 && broInterestRate > 0) {
+                const dailyBrokerageInterest = (broBalance * broInterestRate) / 365.25;
+                dailyDeFi += dailyBrokerageInterest;
+                dom.daily.value = dailyDeFi.toFixed(2);
             }
 
 
-            // --- CORE CALCULATION ENGINE ---
-            function calculate() {
-                // Read all inputs
-                const xgUse = dom.xgUse.checked;
-                const xgAmount = getNum(dom.xgAmount);
-                const xgPrice = getNum(dom.xgPrice);
-                const xgMethod = dom.xgMethod.value;
-                const xgAPY = getNum(dom.xgAPY);
-                const xgPerEpoch = getNum(dom.xgPerEpoch);
-                const xgEpochDays = getNum(dom.xgEpochDays);
-                const xgFee = getNum(dom.xgFee);
-                let xgUsdValue = getNum(dom.xgUsdValue);
-                if (xgPrice > 0) {
-                  xgUsdValue = xgAmount * xgPrice;
-                  dom.xgUsdValue.value = xgUsdValue.toFixed(2);
-                }
+            const weeklyCash = getNum(dom.weeklyCash);
+            const cadence = dom.cadence.value;
+            const fees = getNum(dom.fees);
+            const pctStocks = getNum(dom.pctStocks) / 100;
+            const pctDefiNum = getNum(dom.pctDefi) / 100;
+            const years = getNum(dom.years);
+            const growth = getNum(dom.growth) / 100;
+            const avgDivYield = getNum(dom.yield) / 100;
+            const drip = dom.drip.value === 'yes';
 
-                let dailyDeFi = getNum(dom.daily);
-                let xgDaily = 0;
-                if(xgUse) {
-                    if(xgMethod === 'apy') {
-                        xgDaily = (xgUsdValue * (xgAPY / 100)) / 365;
-                    } else { // epoch
-                        if (xgEpochDays > 0) {
-                            xgDaily = (xgAmount * xgPerEpoch) / xgEpochDays;
-                        } else {
-                            xgDaily = 0;
+            // Calculate investment amounts
+            const daysPerHarvest = { daily: 1, weekly: 7, biweekly: 14, monthly: 30.44 }[cadence];
+            const grossPerHarvest = dailyDeFi * daysPerHarvest;
+            const netPerHarvest = Math.max(0, grossPerHarvest - fees);
+            const toStocksPerHarvest = netPerHarvest * pctStocks;
+            
+            const weeklyDeFiInvest = (toStocksPerHarvest / daysPerHarvest) * 7;
+            const weeklyInvest = weeklyDeFiInvest + weeklyCash;
+            const monthlyInvest = weeklyInvest * (30.44 / 7);
+            const yearlyInvest = weeklyInvest * (365.25 / 7);
+
+            dom.perHarvest.textContent = formatCurrency(toStocksPerHarvest);
+            dom.perHarvest.dataset.raw = toStocksPerHarvest.toFixed(2);
+            dom.perWeek.textContent = formatCurrency(weeklyInvest);
+            dom.perWeek.dataset.raw = weeklyInvest.toFixed(2);
+            dom.perMonth.textContent = formatCurrency(monthlyInvest);
+            dom.perMonth.dataset.raw = monthlyInvest.toFixed(2);
+
+            // Update Allocation Table Splits
+            dom.tbody.querySelectorAll('tr').forEach(row => {
+                const pct = (parseFloat(row.querySelector('.pct').value) || 0) / 100;
+                row.querySelector('.weekly-split').textContent = formatCurrency(weeklyInvest * pct);
+                row.querySelector('.monthly-split').textContent = formatCurrency(monthlyInvest * pct);
+            });
+            applyLumpSplit(); // Ensure lump split is up to date
+            updateTotalPct();
+
+            // Calculate current market value of stocks
+            let stockMarketValue = 0;
+            dom.tbody.querySelectorAll('tr').forEach(row => {
+                const shares = parseFloat(row.querySelector('.cum-shares').value) || 0;
+                const price = parseFloat(row.querySelector('.price').value) || 0;
+                stockMarketValue += shares * price;
+            });
+
+            // Update Summary Card
+            const uninvestedCash = getNum(dom.broBalance);
+            const brokerageMarketValue = uninvestedCash + stockMarketValue;
+
+            const onChainYearly = dailyDeFi * 365.25 * pctDefiNum;
+            const divYear1 = (brokerageMarketValue + yearlyInvest) * avgDivYield;
+
+            dom.sumDaily.textContent = formatCurrency(dailyDeFi);
+            dom.sumDefiYear.textContent = formatCurrency(onChainYearly);
+            dom.sumToStocksYear.textContent = formatCurrency(yearlyInvest);
+            dom.sumDivYear.textContent = formatCurrency(divYear1);
+            dom.sumCombinedYear.textContent = formatCurrency(onChainYearly + divYear1);
+
+            // Blended Yield
+            const includeBrokerage = dom.broInclude.checked;
+            const principal = (includeBrokerage ? brokerageMarketValue : 0) + (xgUsdValue || 0) + dolomiteBalance;
+            if (principal > 0) {
+                const blendedYield = (onChainYearly + divYear1) / principal * 100;
+                dom.sumBlendedYield.textContent = `${formatNumber(blendedYield, 2)}%`;
+            } else {
+                dom.sumBlendedYield.textContent = '–';
+            }
+
+            // Update ETF Wizard
+            const etfShares = getNum(dom.etfShares);
+            const startNav = getNum(dom.etfStartNav);
+            const aum = xgUsdValue + brokerageMarketValue + dolomiteBalance;
+            const liveNav = etfShares > 0 ? aum / etfShares : 0;
+            const change = startNav > 0 ? (liveNav - startNav) / startNav * 100 : 0;
+            
+            dom.etfAUM.textContent = formatCurrency(aum);
+            dom.etfNav.textContent = formatCurrency(liveNav);
+            dom.etfChange.textContent = `${formatNumber(change, 2)}%`;
+            dom.etfChange.className = 'mono ' + (change >= 0 ? 'up' : 'down');
+
+            // Update charts
+            updateProjectionCharts(brokerageMarketValue, yearlyInvest, growth, avgDivYield, years, drip);
+        }
+
+        // --- CHARTING LOGIC ---
+        function updateProjectionCharts(startBalance, yearlyInvest, growth, divYield, years, drip) {
+            const labels = Array.from({ length: years + 1 }, (_, i) => `Year ${i}`);
+            const valueData = [];
+            const divData = [];
+            let currentBalance = startBalance;
+
+            for (let i = 0; i <= years; i++) {
+                if (i > 0) {
+                    const dividends = currentBalance * divYield;
+                    const appreciation = currentBalance * growth;
+                    currentBalance += appreciation + yearlyInvest;
+                    if(drip) {
+                        currentBalance += dividends;
+                    }
+                }
+                valueData.push(currentBalance);
+                divData.push(currentBalance * divYield);
+            }
+
+            const chartConfig = (label, data, color) => ({
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: label,
+                        data: data,
+                        borderColor: color,
+                        backgroundColor: `${color}33`,
+                        fill: true,
+                        tension: 0.2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            titleColor: '#ffffff',
+                            bodyColor: '#e0e0e0',
+                            callbacks: {
+                                label: (context) => `${context.dataset.label}: ${formatCurrency(context.raw)}`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { 
+                                color: '#e0e0e0',
+                                callback: (value) => formatCurrency(value)
+                            },
+                            grid: { color: 'rgba(224, 224, 224, 0.2)' }
+                        },
+                        x: { 
+                            ticks: { color: '#e0e0e0' },
+                            grid: { color: 'transparent' }
                         }
                     }
-                    xgDaily *= (1 - xgFee / 100);
-                    dom.xgDaily.textContent = formatCurrency(xgDaily);
-                    dom.daily.value = xgDaily.toFixed(2);
-                    dailyDeFi = xgDaily;
                 }
-                
-                // Mortgage Offset Calculation
-                const dolomiteBalance = getNum(dom.dolomiteBalance);
-                const dolomiteApy = getNum(dom.dolomiteApy) / 100;
-                const mortgageRate = getNum(dom.mortgageRate) / 100;
-                const annualDolomiteYield = dolomiteBalance * dolomiteApy;
-                dom.dolomiteYield.textContent = formatCurrency(annualDolomiteYield);
-                dom.dolomiteMonthlyYield.textContent = formatCurrency(annualDolomiteYield / 12);
-                const effectiveEquity = mortgageRate > 0 ? annualDolomiteYield / mortgageRate : 0;
-                dom.dolomiteEquity.textContent = formatCurrency(effectiveEquity);
-                
-                if (dom.dolomiteInclude.checked) {
-                    dailyDeFi += annualDolomiteYield / 365.25;
-                    dom.daily.value = dailyDeFi.toFixed(2);
-                }
-                
-                // Brokerage Interest Calculation
-                const broBalance = getNum(dom.broBalance);
-                const broInterestRate = getNum(dom.broInterestRate) / 100;
-                if (dom.broInterestInclude.checked && broBalance > 0 && broInterestRate > 0) {
-                    const dailyBrokerageInterest = (broBalance * broInterestRate) / 365.25;
-                    dailyDeFi += dailyBrokerageInterest;
-                    dom.daily.value = dailyDeFi.toFixed(2);
-                }
+            });
 
+            if (!valueChart) {
+                valueChart = new Chart(document.getElementById('valueChart'), chartConfig('Portfolio Value', valueData, 'rgba(0, 123, 255, 1)'));
+            } else {
+                valueChart.data.labels = labels;
+                valueChart.data.datasets[0].data = valueData;
+                valueChart.update();
+            }
 
-                const weeklyCash = getNum(dom.weeklyCash);
-                const cadence = dom.cadence.value;
-                const fees = getNum(dom.fees);
-                const pctStocks = getNum(dom.pctStocks) / 100;
-                const pctDefiNum = getNum(dom.pctDefi) / 100;
-                const years = getNum(dom.years);
-                const growth = getNum(dom.growth) / 100;
-                const avgDivYield = getNum(dom.yield) / 100;
-                const drip = dom.drip.value === 'yes';
+            if (!divChart) {
+                divChart = new Chart(document.getElementById('divChart'), chartConfig('Annual Dividends', divData, 'rgba(40, 167, 69, 1)'));
+            } else {
+                divChart.data.labels = labels;
+                divChart.data.datasets[0].data = divData;
+                divChart.update();
+            }
+        }
 
-                // Calculate investment amounts
-                const daysPerHarvest = { daily: 1, weekly: 7, biweekly: 14, monthly: 30.44 }[cadence];
-                const grossPerHarvest = dailyDeFi * daysPerHarvest;
-                const netPerHarvest = Math.max(0, grossPerHarvest - fees);
-                const toStocksPerHarvest = netPerHarvest * pctStocks;
-                
-                const weeklyDeFiInvest = (toStocksPerHarvest / daysPerHarvest) * 7;
-                const weeklyInvest = weeklyDeFiInvest + weeklyCash;
-                const monthlyInvest = weeklyInvest * (30.44 / 7);
-                const yearlyInvest = weeklyInvest * (365.25 / 7);
-
-                dom.perHarvest.textContent = formatCurrency(toStocksPerHarvest);
-                dom.perHarvest.dataset.raw = toStocksPerHarvest.toFixed(2);
-                dom.perWeek.textContent = formatCurrency(weeklyInvest);
-                dom.perWeek.dataset.raw = weeklyInvest.toFixed(2);
-                dom.perMonth.textContent = formatCurrency(monthlyInvest);
-                dom.perMonth.dataset.raw = monthlyInvest.toFixed(2);
-
-                // Update Allocation Table Splits
-                dom.tbody.querySelectorAll('tr').forEach(row => {
-                    const pct = (parseFloat(row.querySelector('.pct').value) || 0) / 100;
-                    row.querySelector('.weekly-split').textContent = formatCurrency(weeklyInvest * pct);
-                    row.querySelector('.monthly-split').textContent = formatCurrency(monthlyInvest * pct);
-                });
-                applyLumpSplit(); // Ensure lump split is up to date
-                updateTotalPct();
-
-                // Calculate current market value of stocks
-                let stockMarketValue = 0;
-                dom.tbody.querySelectorAll('tr').forEach(row => {
-                    const shares = parseFloat(row.querySelector('.cum-shares').value) || 0;
-                    const price = parseFloat(row.querySelector('.price').value) || 0;
-                    stockMarketValue += shares * price;
-                });
-
-                // Update Summary Card
-                const uninvestedCash = getNum(dom.broBalance);
-                const brokerageMarketValue = uninvestedCash + stockMarketValue;
-
-                const onChainYearly = dailyDeFi * 365.25 * pctDefiNum;
-                const divYear1 = (brokerageMarketValue + yearlyInvest) * avgDivYield;
-
-                dom.sumDaily.textContent = formatCurrency(dailyDeFi);
-                dom.sumDefiYear.textContent = formatCurrency(onChainYearly);
-                dom.sumToStocksYear.textContent = formatCurrency(yearlyInvest);
-                dom.sumDivYear.textContent = formatCurrency(divYear1);
-                dom.sumCombinedYear.textContent = formatCurrency(onChainYearly + divYear1);
-
-                // Blended Yield
-                const includeBrokerage = dom.broInclude.checked;
-                const principal = (includeBrokerage ? brokerageMarketValue : 0) + (xgUsdValue || 0) + dolomiteBalance;
-                if (principal > 0) {
-                    const blendedYield = (onChainYearly + divYear1) / principal * 100;
-                    dom.sumBlendedYield.textContent = `${formatNumber(blendedYield, 2)}%`;
-                } else {
-                    dom.sumBlendedYield.textContent = '–';
-                }
-
-                // Update ETF Wizard
-                const etfShares = getNum(dom.etfShares);
-                const startNav = getNum(dom.etfStartNav);
-                const aum = xgUsdValue + brokerageMarketValue + dolomiteBalance;
-                const liveNav = etfShares > 0 ? aum / etfShares : 0;
-                const change = startNav > 0 ? (liveNav - startNav) / startNav * 100 : 0;
-                
-                dom.etfAUM.textContent = formatCurrency(aum);
-                dom.etfNav.textContent = formatCurrency(liveNav);
-                dom.etfChange.textContent = `${formatNumber(change, 2)}%`;
-                dom.etfChange.className = 'mono ' + (change >= 0 ? 'up' : 'down');
-
-                // Update charts
-                updateProjectionCharts(brokerageMarketValue, yearlyInvest, growth, avgDivYield, years, drip);
-                
-                // Save state after calculation
+        // --- INIT & EVENT LISTENERS ---
+        function init() {
+            // Setup Listeners
+            dom['btn-login'].addEventListener('click', handleLogin);
+            dom['btn-logout'].addEventListener('click', handleLogout);
+            
+            // Standard input listeners
+            const inputs = document.querySelectorAll('.input, select');
+            inputs.forEach(input => input.addEventListener('input', () => {
+                calculate();
                 saveState();
-            }
+            }));
 
-            // --- EVENT LISTENERS ---
-            function setupEventListeners() {
-                const debouncedCalculate = debounce(() => {
-                    calculate();
-                    saveToFirestore(); // Auto-save on calc
-                }, 300);
-                
-                // Calculation Triggers on input fields
-                const inputs = document.querySelectorAll('.input, select');
-                inputs.forEach(input => input.addEventListener('input', debouncedCalculate));
-                
-                // xGRAIL UI Toggle
-                addListener('xgMethod', 'change', () => {
-                    const isApy = dom.xgMethod.value === 'apy';
-                    dom.xgAPYWrap.style.display = isApy ? 'block' : 'none';
-                    dom.xgUSDWrap.style.display = isApy ? 'block' : 'none';
-                    dom.xgEpochWrap.style.display = isApy ? 'none' : 'flex';
-                });
-                // Safe dispatch
-                const xgMethodEl = dom.xgMethod;
-                if (xgMethodEl) {
-                   xgMethodEl.dispatchEvent(new Event('change'));
+            // Specific toggles
+            dom.xgMethod.addEventListener('change', () => {
+                const isApy = dom.xgMethod.value === 'apy';
+                dom.xgAPYWrap.style.display = isApy ? 'block' : 'none';
+                dom.xgUSDWrap.style.display = isApy ? 'block' : 'none';
+                dom.xgEpochWrap.style.display = isApy ? 'none' : 'flex';
+                saveState();
+            });
+            dom.xgMethod.dispatchEvent(new Event('change'));
+
+            dom.pctStocks.addEventListener('input', () => {
+                dom.pctDefi.value = 100 - getNum(dom.pctStocks);
+                calculate(); saveState();
+            });
+            dom.pctDefi.addEventListener('input', () => {
+                dom.pctStocks.value = 100 - getNum(dom.pctDefi);
+                calculate(); saveState();
+            });
+            
+            // Buttons
+            dom.btnCalc.addEventListener('click', calculate);
+            dom.btnAdd.addEventListener('click', () => { addRow(); saveState(); });
+            dom.btnCSV.addEventListener('click', () => exportCSV(false));
+            dom.btnLumpCSV.addEventListener('click', () => exportCSV(true));
+            dom.btnApplyLumpSplit.addEventListener('click', applyLumpSplit);
+            dom.btnLogDeposit.addEventListener('click', logDeposit);
+            dom.btnClearDeposits.addEventListener('click', clearDeposits);
+            dom.depQuick.addEventListener('change', handleQuickDeposit);
+            dom.btnFetchPrices.addEventListener('click', fetchStockPrices);
+            dom.btnFetchGrailPrice.addEventListener('click', fetchGrailPrice);
+            
+            // Simulator buttons
+            dom.btnSimBuy.addEventListener('click', () => {
+                const currentShares = getNum(dom.etfShares);
+                const simShares = getNum(dom.simShares);
+                dom.etfShares.value = Math.max(0, currentShares - simShares);
+                calculate(); saveState();
+            });
+            dom.btnSimSell.addEventListener('click', () => {
+                const currentShares = getNum(dom.etfShares);
+                const simShares = getNum(dom.simShares);
+                dom.etfShares.value = currentShares + simShares;
+                calculate(); saveState();
+            });
+            dom.btnSetNavTo10.addEventListener('click', () => {
+                const aumText = dom.etfAUM.textContent;
+                const aum = parseFloat(aumText.replace(/[^0-9.-]+/g,""));
+                if (aum > 0) {
+                    dom.etfShares.value = Math.round(aum / 10);
+                    calculate(); saveState();
                 }
+            });
 
-                // Auto-sync percentages
-                addListener('pctStocks', 'input', () => {
-                    dom.pctDefi.value = 100 - getNum(dom.pctStocks);
-                    debouncedCalculate();
+            // Accordion Toggles
+            const toggles = [
+                { btn: dom.btnEtfHelp, panel: dom.etfHelp },
+                { btn: dom.btnSafetyHelp, panel: dom.safetyHelp },
+                { btn: dom.btnRebalanceHelp, panel: dom.rebalanceHelp },
+                { btn: dom.btnTaxHelp, panel: dom.taxHelp },
+            ];
+            toggles.forEach(t => {
+                t.btn.addEventListener('click', (e) => {
+                    const isHidden = t.panel.style.display === 'none' || t.panel.style.display === '';
+                    t.panel.style.display = isHidden ? 'block' : 'none';
+                    if(t.btn !== dom.btnEtfHelp) // etf help btn text is static icon
+                        e.target.textContent = isHidden ? 'Hide Details' : 'Show Details';
                 });
-                addListener('pctDefi', 'input', () => {
-                    dom.pctStocks.value = 100 - getNum(dom.pctDefi);
-                    debouncedCalculate();
-                });
+            });
+
+            // AUTH STATE CHANGE
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user;
+                updateAuthUI(user);
                 
-                // Button Clicks (immediate calculation)
-                addListener('btnCalc', 'click', () => { calculate(); saveToFirestore(); });
-                addListener('btnAdd', 'click', () => addRow());
-                addListener('btnCSV', 'click', () => exportCSV(false));
-                addListener('btnLumpCSV', 'click', () => exportCSV(true));
-                addListener('btnApplyLumpSplit', 'click', applyLumpSplit);
-                addListener('btnLogDeposit', 'click', logDeposit);
-                addListener('btnClearDeposits', 'click', clearDeposits);
-                addListener('depQuick', 'change', handleQuickDeposit);
-                addListener('btnFetchPrices', 'click', fetchStockPrices);
-                addListener('btnFetchGrailPrice', 'click', fetchGrailPrice);
-                
-                // Simulator buttons
-                addListener('btnSimBuy', 'click', () => {
-                    const currentShares = getNum(dom.etfShares);
-                    const simShares = getNum(dom.simShares);
-                    dom.etfShares.value = Math.max(0, currentShares - simShares);
-                    calculate();
-                    saveToFirestore();
-                });
+                if (user) {
+                    // Logged In: Setup Firestore sync
+                    console.log("Logged in as:", user.email);
+                    setupRealtimeListener(user);
+                } else {
+                    // Logged Out: Load from Local Storage
+                    console.log("Logged out");
+                    loadState();
+                }
+            });
+        }
 
-                addListener('btnSimSell', 'click', () => {
-                    const currentShares = getNum(dom.etfShares);
-                    const simShares = getNum(dom.simShares);
-                    dom.etfShares.value = currentShares + simShares;
-                    calculate();
-                    saveToFirestore();
-                });
-                
-                addListener('btnSetNavTo10', 'click', () => {
-                    const aumText = dom.etfAUM.textContent;
-                    const aum = parseFloat(aumText.replace(/[^0-9.-]+/g,""));
-                    if (aum > 0) {
-                        dom.etfShares.value = Math.round(aum / 10);
-                        calculate();
-                        saveToFirestore();
-                    }
-                });
-
-
-                // Accordion Toggles
-                addListener('btnEtfHelp', 'click', () => {
-                   const help = dom.etfHelp;
-                   help.style.display = help.style.display === 'block' ? 'none' : 'block';
-                });
-                addListener('btnSafetyHelp', 'click', (e) => {
-                   const help = dom.safetyHelp;
-                   const isHidden = help.style.display === 'none' || help.style.display === '';
-                   help.style.display = isHidden ? 'block' : 'none';
-                   e.target.textContent = isHidden ? 'Hide Details' : 'Show Details';
-                });
-                 addListener('btnRebalanceHelp', 'click', (e) => {
-                   const help = dom.rebalanceHelp;
-                   const isHidden = help.style.display === 'none' || help.style.display === '';
-                   help.style.display = isHidden ? 'block' : 'none';
-                   e.target.textContent = isHidden ? 'Hide Details' : 'Show Details';
-                });
-                addListener('btnTaxHelp', 'click', (e) => {
-                   const help = dom.taxHelp;
-                   const isHidden = help.style.display === 'none' || help.style.display === '';
-                   help.style.display = isHidden ? 'block' : 'none';
-                   e.target.textContent = isHidden ? 'Hide Details' : 'Show Details';
-                });
-            }
-
-            // --- INITIALIZATION ---
-            function init() {
-                initAuthAndSync(); // Kick off Auth & Sync
-                setupEventListeners();
-            }
-
-            init();
-        });
+        // Start
+        init();
     </script>
 </body>
 </html>
